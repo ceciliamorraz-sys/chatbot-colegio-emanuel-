@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot - Colegio Integral Emanuel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    /* Botón flotante */
+    #chat-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1f6feb;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 26px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Caja del chat */
+    #chat-box {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 320px;
+      height: 420px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    #chat-header {
+      background: #1f6feb;
+      color: #fff;
+      padding: 12px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #chat-messages {
+      padding: 10px;
+      height: 260px;
+      overflow-y: auto;
+      background: #f4f6f8;
+      font-size: 14px;
+    }
+
+    .msg {
+      background: #fff;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+
+    .user {
+      background: #dff3ff;
+      text-align: right;
+    }
+
+    #chat-options {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+      background: #fff;
+      border-top: 1px solid #ddd;
+    }
+
+    .option-btn {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .option-btn:hover {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+
+<body>
+
+<button id="chat-btn">💬</button>
+
+<div id="chat-box">
+  <div id="chat-header">
+    Colegio Integral Emanuel
+    <span style="cursor:pointer;" onclick="toggleChat()">✖</span>
+  </div>
+
+  <div id="chat-messages"></div>
+
+  <div id="chat-options">
+    <button class="option-btn" onclick="sendAnswer('direccion')">📍 Dirección</button>
+    <button class="option-btn" onclick="sendAnswer('matricula')">💵 Matrícula</button>
+    <button class="option-btn" onclick="sendAnswer('mensualidad')">📅 Mensualidad</button>
+    <button class="option-btn" onclick="sendAnswer('ofrece')">🎓 ¿Qué ofrece?</button>
+    <button class="option-btn" onclick="sendAnswer('whatsapp')">📲 WhatsApp</button>
+  </div>
+</div>
+
+<script>
+  const chatBtn = document.getElementById("chat-btn");
+  const chatBox = document.getElementById("chat-box");
+  const messages = document.getElementById("chat-messages");
+
+  chatBtn.onclick = toggleChat;
+
+  function toggleChat() {
+    chatBox.style.display = chatBox.style.display === "block" ? "none" : "block";
+    if (messages.innerHTML === "") {
+      addBotMessage("👋 ¡Bienvenido al Colegio Integral Emanuel! Seleccione una opción para recibir información.");
+    }
+  }
+
+  function addBotMessage(text) {
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.innerText = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function addUserMessage(text) {
+    const div = document.createElement("div");
+    div.className = "msg user";
+    div.innerText = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function sendAnswer(type) {
+    let response = "";
+
+    if (type === "direccion") {
+      addUserMessage("Dirección");
+      response = "📍 Costado Este del Maxipali, 25 varas al norte.";
+    }
+
+    if (type === "matricula") {
+      addUserMessage("Matrícula");
+      response = "💵 El costo de la matrícula se brinda directamente por WhatsApp.";
+    }
+
+    if (type === "mensualidad") {
+      addUserMessage("Mensualidad");
+      response = "📅 La mensualidad es de C$ 1,450.";
+    }
+
+    if (type === "ofrece") {
+      addUserMessage("¿Qué ofrece el colegio?");
+      response = "🎓 Ofrecemos educación integral, formación en valores, docentes capacitados y un ambiente seguro para nuestros estudiantes.";
+    }
+
+    if (type === "whatsapp") {
+      addUserMessage("WhatsApp");
+      window.open("https://wa.me/50588543012?text=Hola,%20deseo%20información%20sobre%20el%20Colegio%20Integral%20Emanuel", "_blank");
+      response = "📲 Abriendo WhatsApp para atención personalizada.";
+    }
+
+    setTimeout(() => addBotMessage(response), 400);
+  }
+</script>
+
+</body>
+</html>
