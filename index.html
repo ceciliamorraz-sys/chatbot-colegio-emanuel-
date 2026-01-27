@@ -134,9 +134,20 @@
   chatBtn.onclick = toggleChat;
 
   function toggleChat() {
-    chatBox.style.display = chatBox.style.display === "block" ? "none" : "block";
-    if (messages.innerHTML === "") {
-      addBotMessage("👋 ¡Bienvenido al Colegio Integral Emanuel! Seleccione una opción para recibir información.");
+  const isOpen = chatBox.style.display === "block";
+  chatBox.style.display = isOpen ? "none" : "block";
+
+  // Saludo automático solo la primera vez
+  if (!isOpen && messages.innerHTML.trim() === "") {
+    addBotMessage(
+      "👋 ¡Hola! Bienvenido al Colegio Integral Emanuel.\n\n" +
+      "😊 Estoy aquí para ayudarte.\n" +
+      "¿Qué información necesitas hoy?\n\n" +
+      "Puedes seleccionar una opción o escribir tu pregunta."
+    );
+  }
+}
+
     }
   }
 
