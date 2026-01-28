@@ -1,149 +1,347 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>EmaBot – Colegio Integral Emanuel</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EmaBot - Colegio Integral Emanuel</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
 
-<style>
-#chat-btn{
-  position:fixed; bottom:20px; right:20px;
-  width:60px; height:60px; border-radius:50%;
-  background:#1f6feb; color:#fff;
-  font-size:26px; border:none; cursor:pointer;
-  z-index:9999;
-}
-#chat-box{
-  display:none; position:fixed; bottom:90px; right:20px;
-  width:320px; background:#fff; border-radius:10px;
-  box-shadow:0 4px 15px rgba(0,0,0,.3);
-  overflow:hidden; z-index:9999;
-}
-#chat-header{
-  background:#1f6feb; color:#fff; padding:12px;
-  font-weight:bold; display:flex;
-  justify-content:space-between;
-}
-#chat-messages{
-  padding:10px; height:280px;
-  overflow-y:auto; background:#f4f6f8;
-}
-.msg{background:#fff; padding:8px;
-  border-radius:8px; margin-bottom:6px;
-}
-.user{background:#dff3ff; text-align:right}
-#chat-input{
-  display:flex; gap:5px; padding:10px;
-}
-#chat-input input{
-  flex:1; padding:8px;
-  border-radius:8px; border:1px solid #ccc;
-}
-#chat-input button{
-  background:#1f6feb; color:#fff;
-  border:none; border-radius:8px;
-  padding:8px 10px; cursor:pointer;
-}
-</style>
+    #chat-btn{
+      position: fixed; bottom: 20px; right: 20px;
+      background:#1f6feb; color:#fff; border:none;
+      border-radius:50%; width:60px; height:60px;
+      font-size:26px; cursor:pointer;
+      box-shadow:0 4px 10px rgba(0,0,0,0.3);
+      z-index: 99999;
+    }
+
+    #chat-box{
+      display:none;
+      position: fixed; bottom: 90px; right: 20px;
+      width: 360px; max-width: calc(100vw - 40px);
+      height: 520px; max-height: calc(100vh - 140px);
+      background:#fff; border-radius:12px;
+      box-shadow:0 8px 18px rgba(0,0,0,0.25);
+      overflow:hidden;
+      z-index: 99999;
+    }
+
+    #chat-header{
+      background:#1f6feb; color:#fff; padding:12px 14px;
+      font-weight:bold; display:flex; align-items:center; justify-content:space-between;
+      gap: 10px;
+    }
+    #chat-header .title { display:flex; align-items:center; gap:8px; }
+    #chat-header .actions { display:flex; gap:10px; align-items:center; }
+    #chat-header button{
+      background: transparent; border:none; color:#fff; font-size:18px; cursor:pointer;
+    }
+
+    #chat-messages{
+      padding: 12px;
+      height: 340px;
+      overflow-y:auto;
+      background:#f4f6f8;
+      font-size:14px;
+    }
+
+    .msg{
+      background:#fff;
+      padding:10px 12px;
+      margin-bottom:10px;
+      border-radius:10px;
+      line-height:1.35;
+      white-space: pre-wrap;
+    }
+    .user{ background:#dff3ff; text-align:right; }
+
+    #chat-footer{
+      padding: 10px;
+      border-top: 1px solid #e5e7eb;
+      background:#fff;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .row{ display:flex; gap:10px; align-items:center; }
+
+    #user-input{
+      flex:1;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid #d1d5db;
+      outline:none;
+      font-size:14px;
+    }
+
+    .btn{
+      padding:10px 12px;
+      border:none;
+      border-radius:10px;
+      background:#1f6feb;
+      color:#fff;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px;
+    }
+
+    #faq{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .faq-btn{
+      padding:10px 10px;
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      background:#fff;
+      cursor:pointer;
+      text-align:left;
+      font-size:14px;
+    }
+    .faq-btn:hover{ background:#f3f4f6; }
+
+    @media (max-width: 420px){
+      #chat-box{ width: calc(100vw - 24px); right: 12px; }
+      #chat-btn{ right: 12px; }
+      #faq{ grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 
 <body>
 
-<button id="chat-btn">💬</button>
+<button id="chat-btn" aria-label="Abrir chat">💬</button>
 
-<div id="chat-box">
+<div id="chat-box" role="dialog" aria-label="Chat EmaBot">
   <div id="chat-header">
-    🤖 EmaBot – Colegio Integral Emanuel
-    <span onclick="toggleChat()" style="cursor:pointer">✖</span>
+    <div class="title">🤖 <span>EmaBot – Colegio Integral Emanuel</span></div>
+    <div class="actions">
+      <button id="voice-toggle" title="Activar/Desactivar voz" aria-label="Voz">🔊</button>
+      <button onclick="toggleChat()" aria-label="Cerrar">✖</button>
+    </div>
   </div>
 
   <div id="chat-messages"></div>
 
-  <div id="chat-input">
-    <input id="user-input" placeholder="Escribe tu pregunta…">
-    <button onclick="sendText()">Enviar</button>
-    <button onclick="startVoice()">🎤</button>
+  <div id="chat-footer">
+    <div id="faq">
+      <button class="faq-btn" onclick="answerFAQ('direccion')">📍 Dirección</button>
+      <button class="faq-btn" onclick="answerFAQ('mensualidad')">📅 Mensualidad</button>
+      <button class="faq-btn" onclick="answerFAQ('matricula')">💵 Matrícula</button>
+      <button class="faq-btn" onclick="answerFAQ('ofrece')">🎓 ¿Qué ofrece?</button>
+      <button class="faq-btn" onclick="goWhatsApp('Hola, deseo información del Colegio Integral Emanuel.')">📲 WhatsApp</button>
+      <button class="faq-btn" onclick="showHorario()">⏰ Horario</button>
+    </div>
+
+    <div class="row">
+      <input id="user-input" placeholder="Escribe tu pregunta..." />
+      <button class="btn" onclick="handleUserQuestion()">Enviar</button>
+    </div>
   </div>
 </div>
 
 <script>
-const chatBtn=document.getElementById("chat-btn");
-const chatBox=document.getElementById("chat-box");
-const messages=document.getElementById("chat-messages");
-let greeted=false;
+  // ========= CONFIG =========
+  const WHATSAPP_NUMBER = "50588543012";
+  const OPEN_HOUR = 7;
+  const CLOSE_HOUR = 15;
 
-chatBtn.onclick=toggleChat;
+  const saludo = [
+    "👋 Bienvenido al Colegio Integral Emanuel.",
+    "Soy EmaBot, el asistente virtual institucional.",
+    "",
+    "⏰ Horario de atención: Lunes a Viernes, 7:00 a.m. a 3:00 p.m.",
+    "",
+    "📖 El texto bíblico de hoy es:",
+    "“Instruye al niño en su camino, y aun cuando fuere viejo no se apartará de él.”",
+    "(Proverbios 22:6)",
+    "",
+    "😊 ¿En qué más podemos ayudarte?"
+  ].join("\n");
 
-function toggleChat(){
-  chatBox.style.display=
-    chatBox.style.display==="block"?"none":"block";
+  const cierre = "🙏 Bendiciones, quedamos a su disposición.";
 
-  if(!greeted){
-    addBot("👋 Bienvenido al Colegio Integral Emanuel.");
-    addBot("Soy EmaBot, el asistente virtual institucional.");
-    addBot("⏰ Horario de atención: Lunes a Viernes, 7:00 a.m. a 3:00 p.m.");
-    addBot("📖 El texto bíblico de hoy es:\n“Instruye al niño en su camino…” (Proverbios 22:6)");
-    addBot("😊 ¿En qué más podemos ayudarte?");
-    greeted=true;
-  }
-}
+  // ========= ELEMENTS =========
+  const chatBtn = document.getElementById("chat-btn");
+  const chatBox = document.getElementById("chat-box");
+  const messages = document.getElementById("chat-messages");
+  const inputEl = document.getElementById("user-input");
+  const voiceToggleBtn = document.getElementById("voice-toggle");
 
-function addBot(text){
-  const d=document.createElement("div");
-  d.className="msg"; d.innerText=text;
-  messages.appendChild(d);
-  messages.scrollTop=messages.scrollHeight;
-}
+  chatBtn.onclick = toggleChat;
 
-function addUser(text){
-  const d=document.createElement("div");
-  d.className="msg user"; d.innerText=text;
-  messages.appendChild(d);
-  messages.scrollTop=messages.scrollHeight;
-}
+  let greeted = false;
+  let voiceEnabled = true; // ✅ VOZ ACTIVADA POR DEFECTO
 
-function normalize(t){
-  return t.toLowerCase().normalize("NFD")
-  .replace(/[\u0300-\u036f]/g,"");
-}
+  // ========= VOZ (TTS) =========
+  function speak(text){
+    if (!voiceEnabled) return;
 
-function sendText(){
-  const input=document.getElementById("user-input");
-  if(!input.value)return;
-  handleQuestion(input.value);
-  input.value="";
-}
+    if (!("speechSynthesis" in window)) {
+      // Si no hay soporte, no hacemos nada
+      return;
+    }
 
-function handleQuestion(q){
-  addUser(q);
-  const t=normalize(q);
+    // Evita que se encime una voz con otra
+    window.speechSynthesis.cancel();
 
-  if(t.includes("direccion")||t.includes("ubicacion")){
-    addBot("📍 Costado Este del Maxipali, 25 varas al norte.");
-    return;
-  }
-  if(t.includes("mensualidad")){
-    addBot("📅 La mensualidad es de C$ 1,450.");
-    return;
-  }
-  if(t.includes("matricula")){
-    addBot("💵 La información de matrícula se brinda por WhatsApp.");
-    return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "es-ES";
+    utter.rate = 1;   // velocidad normal
+    utter.pitch = 1;  // tono normal
+
+    window.speechSynthesis.speak(utter);
   }
 
-  addBot("📲 Te atendemos directamente por WhatsApp.");
-  addBot("Bendiciones, quedamos a su disposición.");
-  window.open("https://wa.me/50588543012","_blank");
-}
+  voiceToggleBtn.onclick = () => {
+    voiceEnabled = !voiceEnabled;
+    voiceToggleBtn.textContent = voiceEnabled ? "🔊" : "🔇";
+    if (!voiceEnabled) window.speechSynthesis.cancel();
+  };
 
-function startVoice(){
-  const rec=new(window.SpeechRecognition||window.webkitSpeechRecognition)();
-  rec.lang="es-ES";
-  rec.start();
-  rec.onresult=e=>{
-    handleQuestion(e.results[0][0].transcript);
+  // ========= CHAT =========
+  function toggleChat(){
+    const isOpen = chatBox.style.display === "block";
+    chatBox.style.display = isOpen ? "none" : "block";
+
+    if (!isOpen && !greeted){
+      addBotMessage(saludo, true); // ✅ habla el saludo
+      greeted = true;
+    }
   }
-}
+
+  function addBotMessage(text, shouldSpeak = true){
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+
+    // ✅ Hace que el asistente hable cada respuesta del bot
+    if (shouldSpeak) speak(text);
+  }
+
+  function addUserMessage(text){
+    const div = document.createElement("div");
+    div.className = "msg user";
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function normalizeText(text){
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+  }
+
+  // ========= HORARIO =========
+  function isWithinBusinessHours(){
+    const now = new Date();
+    const day = now.getDay(); // 0 domingo, 1 lunes...
+    const hour = now.getHours();
+
+    const isWeekday = day >= 1 && day <= 5;
+    const inHours = hour >= OPEN_HOUR && hour < CLOSE_HOUR;
+    return isWeekday && inHours;
+  }
+
+  function showHorario(){
+    addUserMessage("Horario");
+    addBotMessage("⏰ Horario de atención: Lunes a Viernes, 7:00 a.m. a 3:00 p.m.\n" + cierre);
+  }
+
+  // ========= WHATSAPP =========
+  function goWhatsApp(message){
+    const url = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
+    window.open(url, "_blank");
+  }
+
+  function fallbackToWhatsApp(userQuestion){
+    addBotMessage("No tengo esa información registrada aún. 📲 Te atendemos por WhatsApp.\n" + cierre);
+    goWhatsApp("Hola, tengo esta consulta: " + userQuestion);
+  }
+
+  // ========= FAQ =========
+  function answerFAQ(type){
+    if (type === "direccion"){
+      addUserMessage("Dirección");
+      addBotMessage("📍 Costado Este del Maxipali, 25 varas al norte.\n" + cierre);
+      return;
+    }
+
+    if (type === "mensualidad"){
+      addUserMessage("Mensualidad");
+      addBotMessage("📅 La mensualidad es de C$ 1,450.\n" + cierre);
+      return;
+    }
+
+    if (type === "matricula"){
+      addUserMessage("Matrícula");
+      addBotMessage("💵 La información de matrícula se brinda directamente por WhatsApp.\n" + cierre);
+      goWhatsApp("Hola, deseo información de matrícula/inscripción.");
+      return;
+    }
+
+    if (type === "ofrece"){
+      addUserMessage("¿Qué ofrece?");
+      addBotMessage("🎓 Ofrecemos educación integral, formación en valores, docentes capacitados y un ambiente seguro.\n" + cierre);
+      return;
+    }
+  }
+
+  // ========= PREGUNTA LIBRE =========
+  function handleUserQuestion(){
+    const question = (inputEl.value || "").trim();
+    if (!question) return;
+
+    addUserMessage(question);
+    inputEl.value = "";
+
+    const q = normalizeText(question);
+
+    // Si fuera de horario → WhatsApp
+    if (!isWithinBusinessHours()){
+      addBotMessage("⏰ En este momento estamos fuera del horario de atención.\n📲 Para atención inmediata, escríbenos por WhatsApp.\n" + cierre);
+      goWhatsApp("Hola, escribo fuera de horario. Mi consulta es: " + question);
+      return;
+    }
+
+    if (q.includes("direccion") || q.includes("ubicacion") || q.includes("donde")){
+      addBotMessage("📍 Costado Este del Maxipali, 25 varas al norte.\n" + cierre);
+      return;
+    }
+    if (q.includes("mensualidad") || q.includes("cuota")){
+      addBotMessage("📅 La mensualidad es de C$ 1,450.\n" + cierre);
+      return;
+    }
+    if (q.includes("matricula") || q.includes("inscripcion")){
+      addBotMessage("💵 La información de matrícula se brinda por WhatsApp.\n" + cierre);
+      goWhatsApp("Hola, deseo información de matrícula/inscripción.");
+      return;
+    }
+    if (q.includes("ofrece") || q.includes("servicios")){
+      addBotMessage("🎓 Ofrecemos educación integral, formación en valores y un ambiente seguro.\n" + cierre);
+      return;
+    }
+    if (q.includes("contacto") || q.includes("telefono") || q.includes("whatsapp")){
+      addBotMessage("📲 Te atendemos por WhatsApp.\n" + cierre);
+      goWhatsApp("Hola, deseo información del Colegio Integral Emanuel.");
+      return;
+    }
+
+    fallbackToWhatsApp(question);
+  }
+
+  // Enter para enviar
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") handleUserQuestion();
+  });
 </script>
 
 </body>
