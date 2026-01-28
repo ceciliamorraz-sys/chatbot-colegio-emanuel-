@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>EmaBot - Colegio Integral Emanuel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
     body { font-family: Arial, sans-serif; }
 
-    /* Botón flotante */
     #chat-btn {
       position: fixed;
       bottom: 20px;
@@ -22,22 +21,21 @@
       font-size: 26px;
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      z-index: 999999;
+      z-index: 99999;
     }
 
-    /* Caja del chat */
     #chat-box {
       display: none;
       position: fixed;
       bottom: 90px;
       right: 20px;
-      width: 330px;
-      height: 470px;
+      width: 340px;
+      height: 520px;
       background: #fff;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       overflow: hidden;
-      z-index: 999999;
+      z-index: 99999;
     }
 
     #chat-header {
@@ -52,11 +50,11 @@
 
     #chat-messages {
       padding: 10px;
-      height: 250px;
+      height: 280px;
       overflow-y: auto;
       background: #f4f6f8;
       font-size: 14px;
-      white-space: pre-line; /* respeta saltos de línea */
+      white-space: pre-line;
     }
 
     .msg {
@@ -64,7 +62,6 @@
       padding: 8px 10px;
       margin-bottom: 8px;
       border-radius: 10px;
-      line-height: 1.4;
     }
 
     .user {
@@ -72,33 +69,37 @@
       text-align: right;
     }
 
-    #chat-options {
+    .btn {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn:hover { background: #f0f0f0; }
+
+    #chat-actions, #chat-options {
       padding: 10px;
       display: grid;
       gap: 8px;
       background: #fff;
-      border-top: 1px solid #ddd;
     }
 
-    .option-btn {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background: #fff;
-      cursor: pointer;
-      text-align: left;
-      font-size: 14px;
+    .primary {
+      background: #1f6feb;
+      color: #fff;
+      border-color: #1f6feb;
     }
-
-    .option-btn:hover { background: #f0f0f0; }
   </style>
 </head>
 
 <body>
 
-<button id="chat-btn" aria-label="Abrir chat">💬</button>
+<button id="chat-btn">💬</button>
 
-<div id="chat-box" role="dialog" aria-label="Chat EmaBot">
+<div id="chat-box">
   <div id="chat-header">
     🤖 EmaBot – Colegio Integral Emanuel
     <span style="cursor:pointer;" onclick="toggleChat()">✖</span>
@@ -106,104 +107,124 @@
 
   <div id="chat-messages"></div>
 
+  <div id="chat-actions">
+    <button class="btn primary" onclick="speakLast()">🔊 Hablar</button>
+    <button class="btn" onclick="startListening()">🎤 Escuchar</button>
+  </div>
+
   <div id="chat-options">
-    <button class="option-btn" onclick="sendAnswer('direccion')">📍 Dirección</button>
-    <button class="option-btn" onclick="sendAnswer('matricula')">💵 Matrícula</button>
-    <button class="option-btn" onclick="sendAnswer('mensualidad')">📅 Mensualidad</button>
-    <button class="option-btn" onclick="sendAnswer('ofrece')">🎓 ¿Qué ofrece?</button>
-    <button class="option-btn" onclick="sendAnswer('horario')">⏰ Horario de atención</button>
-    <button class="option-btn" onclick="sendAnswer('whatsapp')">📲 WhatsApp</button>
+    <button class="btn" onclick="sendFAQ('direccion')">📍 Dirección</button>
+    <button class="btn" onclick="sendFAQ('matricula')">💵 Matrícula</button>
+    <button class="btn" onclick="sendFAQ('mensualidad')">📅 Mensualidad</button>
+    <button class="btn" onclick="sendFAQ('ofrece')">🎓 ¿Qué ofrece?</button>
+    <button class="btn" onclick="sendFAQ('horario')">⏰ Horario</button>
+    <button class="btn" onclick="sendFAQ('whatsapp')">📲 WhatsApp</button>
   </div>
 </div>
 
 <script>
-  // ====== DATOS DEL COLEGIO ======
-  const WHATSAPP_NUMBER = "50588543012";
-  const COLEGIO_NOMBRE = "Colegio Integral Emanuel";
-  const DIRECCION = "Costado Este del Maxipali, 25 varas al norte.";
-  const MENSUALIDAD = "C$ 1,450.";
-  const OFRECE = "Educación integral, formación en valores, docentes capacitados y un ambiente seguro.";
-  const HORARIO = "Lunes a viernes, de 7:00 a.m. a 3:00 p.m.";
+const SCHOOL = {
+  name: "Colegio Integral Emanuel",
+  address: "Costado Este del Maxipali, 25 varas al norte.",
+  monthly: "C$ 1,450",
+  horario: "Lunes a Viernes de 7:00 a.m. a 3:00 p.m.",
+  whatsapp: "50588543012"
+};
 
-  // ====== ELEMENTOS ======
-  const chatBtn = document.getElementById("chat-btn");
-  const chatBox = document.getElementById("chat-box");
-  const messages = document.getElementById("chat-messages");
+const chatBtn = document.getElementById("chat-btn");
+const chatBox = document.getElementById("chat-box");
+const messages = document.getElementById("chat-messages");
 
-  chatBtn.onclick = toggleChat;
+let greeted = false;
+let lastBotText = "";
 
-  // ====== ABRIR/CERRAR + SALUDO ======
-  function toggleChat() {
-    const isOpen = chatBox.style.display === "block";
-    chatBox.style.display = isOpen ? "none" : "block";
+chatBtn.onclick = toggleChat;
 
-    // Saludo automático solo la primera vez
-    if (!isOpen && messages.innerHTML.trim() === "") {
-      addBotMessage(
-        "👋 ¡Hola! Soy EmaBot, el asistente virtual del " + COLEGIO_NOMBRE + ".\n\n" +
-        "😊 Estoy aquí para ayudarte.\n" +
-        "Selecciona una opción para recibir información."
-      );
-    }
+function toggleChat() {
+  chatBox.style.display = chatBox.style.display === "block" ? "none" : "block";
+  if (!greeted) {
+    greeted = true;
+    addBotMessage(
+      "👋 ¡Hola! Soy EmaBot, el asistente virtual del " + SCHOOL.name +
+      ".\n⏰ Horario: " + SCHOOL.horario +
+      "\n\nSelecciona una opción o presiona 🎤 para hablar."
+    , true);
   }
+}
 
-  // ====== MENSAJES ======
-  function addBotMessage(text) {
-    const div = document.createElement("div");
-    div.className = "msg";
-    div.innerText = text;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
+function addBotMessage(text, speakIt=false) {
+  const finalText = text + "\n\n😊 ¿En qué más podemos ayudarte?";
+  const div = document.createElement("div");
+  div.className = "msg";
+  div.innerText = finalText;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  lastBotText = finalText;
+  if (speakIt) speak(finalText);
+}
+
+function addUserMessage(text) {
+  const div = document.createElement("div");
+  div.className = "msg user";
+  div.innerText = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "es-ES";
+  window.speechSynthesis.speak(u);
+}
+
+function speakLast() {
+  if (lastBotText) speak(lastBotText);
+}
+
+function openWhatsApp(text) {
+  window.open(
+    "https://wa.me/" + SCHOOL.whatsapp + "?text=" + encodeURIComponent(text),
+    "_blank"
+  );
+}
+
+function sendFAQ(type) {
+  let r = "";
+  if (type === "direccion") r = "📍 " + SCHOOL.address;
+  if (type === "mensualidad") r = "📅 La mensualidad es de " + SCHOOL.monthly;
+  if (type === "ofrece") r = "🎓 Ofrecemos educación integral y formación en valores.";
+  if (type === "horario") r = "⏰ Atendemos " + SCHOOL.horario;
+  if (type === "matricula") {
+    r = "💵 La información de matrícula se brinda por WhatsApp.";
+    openWhatsApp("Hola, deseo información de matrícula del Colegio Integral Emanuel.");
   }
-
-  function addUserMessage(text) {
-    const div = document.createElement("div");
-    div.className = "msg user";
-    div.innerText = text;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
+  if (type === "whatsapp") {
+    r = "📲 Te estamos redirigiendo a WhatsApp.";
+    openWhatsApp("Hola, deseo información del Colegio Integral Emanuel.");
   }
+  addUserMessage(type);
+  setTimeout(() => addBotMessage(r, true), 300);
+}
 
-  // ====== WHATSAPP ======
-  function openWhatsApp(text) {
-    const url = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(text);
-    window.open(url, "_blank");
+function startListening() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    addBotMessage("⚠️ Tu navegador no soporta reconocimiento de voz.");
+    return;
   }
-
-  // ====== RESPUESTAS FAQ ======
-  function sendAnswer(type) {
-    let response = "";
-
-    if (type === "direccion") {
-      addUserMessage("Dirección");
-      response = "📍 " + DIRECCION;
-    }
-    else if (type === "mensualidad") {
-      addUserMessage("Mensualidad");
-      response = "📅 La mensualidad es de " + MENSUALIDAD;
-    }
-    else if (type === "ofrece") {
-      addUserMessage("¿Qué ofrece el colegio?");
-      response = "🎓 " + OFRECE;
-    }
-    else if (type === "horario") {
-      addUserMessage("Horario de atención");
-      response = "⏰ Atendemos: " + HORARIO + "\n📲 Fuera de este horario, puedes escribirnos por WhatsApp.";
-    }
-    else if (type === "matricula") {
-      addUserMessage("Matrícula");
-      response = "💵 La información de matrícula se brinda directamente por WhatsApp.\n📲 Abriendo WhatsApp...";
-      setTimeout(() => openWhatsApp("Hola, deseo información de matrícula del " + COLEGIO_NOMBRE), 400);
-    }
-    else if (type === "whatsapp") {
-      addUserMessage("WhatsApp");
-      response = "📲 Abriendo WhatsApp para atención personalizada.";
-      setTimeout(() => openWhatsApp("Hola, deseo información sobre el " + COLEGIO_NOMBRE), 400);
-    }
-
-    if (response) setTimeout(() => addBotMessage(response), 250);
-  }
+  const rec = new SR();
+  rec.lang = "es-ES";
+  rec.onresult = e => {
+    const text = e.results[0][0].transcript;
+    addUserMessage("🎤 " + text);
+    addBotMessage("📲 Te atenderemos por WhatsApp.", true);
+    openWhatsApp("Consulta: " + text);
+  };
+  rec.start();
+}
 </script>
 
 </body>
 </html>
+
