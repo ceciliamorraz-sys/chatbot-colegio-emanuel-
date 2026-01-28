@@ -27,8 +27,8 @@ body { font-family: Arial, sans-serif; }
   position: fixed;
   bottom: 90px;
   right: 20px;
-  width: 330px;
-  height: 470px;
+  width: 340px;
+  height: 500px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
@@ -46,7 +46,7 @@ body { font-family: Arial, sans-serif; }
 
 #chat-messages {
   padding: 10px;
-  height: 280px;
+  height: 300px;
   overflow-y: auto;
   background: #f4f6f8;
   white-space: pre-line;
@@ -93,10 +93,11 @@ body { font-family: Arial, sans-serif; }
   <div id="chat-messages"></div>
 
   <div id="chat-options">
+    <button class="option-btn" onclick="sendAnswer('contacto')">📞 Contacto</button>
+    <button class="option-btn" onclick="sendAnswer('preescolar')">👶 Preescolar</button>
+    <button class="option-btn" onclick="sendAnswer('primaria')">📘 Primaria</button>
+    <button class="option-btn" onclick="sendAnswer('secundaria')">🎓 Secundaria</button>
     <button class="option-btn" onclick="sendAnswer('direccion')">📍 Dirección</button>
-    <button class="option-btn" onclick="sendAnswer('matricula')">💵 Matrícula</button>
-    <button class="option-btn" onclick="sendAnswer('mensualidad')">📅 Mensualidad</button>
-    <button class="option-btn" onclick="sendAnswer('ofrece')">🎓 ¿Qué ofrece?</button>
     <button class="option-btn" onclick="sendAnswer('whatsapp')">📲 WhatsApp</button>
   </div>
 </div>
@@ -108,24 +109,16 @@ const messages = document.getElementById("chat-messages");
 
 chatBtn.onclick = toggleChat;
 
-// 📖 FRASES CRISTIANAS
-const frasesCristianas = [
-  "📖 \"Todo lo puedo en Cristo que me fortalece.\" (Filipenses 4:13)",
-  "📖 \"El Señor te bendiga y te guarde.\" (Números 6:24)",
-  "📖 \"Instruye al niño en su camino.\" (Proverbios 22:6)",
-  "📖 \"La sabiduría viene del Señor.\" (Proverbios 2:6)",
-  "📖 \"Dios es amor.\" (1 Juan 4:8)"
-];
+// ⏰ CONFIGURACIÓN DE HORARIO
+const horaInicio = 7;
+const horaFin = 15;
 
-function fraseAleatoria() {
-  return frasesCristianas[Math.floor(Math.random() * frasesCristianas.length)];
-}
+// 📖 VERSÍCULO SOLO EN EL SALUDO
+const versiculo = "📖 \"Instruye al niño en su camino, y aun cuando fuere viejo no se apartará de él.\" (Proverbios 22:6)";
 
-function speak(text) {
-  if (!("speechSynthesis" in window)) return;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "es-ES";
-  window.speechSynthesis.speak(u);
+function dentroDeHorario() {
+  const h = new Date().getHours();
+  return h >= horaInicio && h < horaFin;
 }
 
 function addBotMessage(text) {
@@ -134,50 +127,60 @@ function addBotMessage(text) {
   div.innerText = text;
   messages.appendChild(div);
   messages.scrollTop = messages.scrollHeight;
-  speak(text);
-}
-
-function cierreCristiano() {
-  setTimeout(() => {
-    addBotMessage(fraseAleatoria());
-    setTimeout(() => {
-      addBotMessage("🙏 Bendiciones, quedamos a su disposición.");
-    }, 900);
-  }, 700);
 }
 
 function toggleChat() {
   chatBox.style.display = chatBox.style.display === "block" ? "none" : "block";
   if (messages.innerHTML === "") {
-    addBotMessage("👋 ¡Hola! Soy EmaBot, el asistente virtual del Colegio Integral Emanuel.");
-    addBotMessage("😊 ¿En qué podemos ayudarte hoy?");
+    addBotMessage(
+      "👋 Bienvenido al Colegio Integral Emanuel.\n\n" +
+      "Soy EmaBot, el asistente virtual institucional.\n\n" +
+      "⏰ Horario de atención:\nLunes a Viernes, 7:00 a.m. a 3:00 p.m.\n\n" +
+      versiculo
+    );
   }
 }
 
 function sendAnswer(type) {
+  if (!dentroDeHorario()) {
+    addBotMessage(
+      "⏰ En este momento estamos fuera del horario de atención.\n" +
+      "📲 Puede escribirnos por WhatsApp y con gusto le atenderemos.\n\n" +
+      "Bendiciones, quedamos a su disposición."
+    );
+    return;
+  }
+
   let response = "";
 
+  if (type === "contacto") {
+    response =
+      "📍 Dirección:\nCostado Este del MaxiPalí, 25 varas al norte.\n\n" +
+      "📲 WhatsApp: 505 8854 3012\n\n" +
+      "⏰ Horario:\nLunes a Viernes, 7:00 a.m. a 3:00 p.m.";
+  }
+
+  if (type === "preescolar")
+    response = "👶 Nivel Preescolar:\nFormación integral, valores cristianos y aprendizaje lúdico.";
+
+  if (type === "primaria")
+    response = "📘 Nivel Primaria:\nEducación académica sólida, valores y acompañamiento docente.";
+
+  if (type === "secundaria")
+    response = "🎓 Nivel Secundaria:\nPreparación académica, orientación vocacional y formación integral.";
+
   if (type === "direccion")
-    response = "📍 Costado Este del Maxipali, 25 varas al norte.";
-
-  if (type === "mensualidad")
-    response = "📅 La mensualidad es de C$ 1,450.";
-
-  if (type === "matricula")
-    response = "💵 La información de matrícula se brinda por WhatsApp.";
-
-  if (type === "ofrece")
-    response = "🎓 Ofrecemos educación integral, formación en valores y un ambiente seguro.";
+    response = "📍 Costado Este del MaxiPalí, 25 varas al norte.";
 
   if (type === "whatsapp") {
     window.open("https://wa.me/50588543012", "_blank");
-    response = "📲 Te estamos redirigiendo a WhatsApp.";
+    response = "📲 Le estamos redirigiendo a WhatsApp para atención personalizada.";
   }
 
-  addBotMessage(response);
-  cierreCristiano();
+  addBotMessage(response + "\n\nBendiciones, quedamos a su disposición.");
 }
 </script>
 
 </body>
 </html>
+
