@@ -2,80 +2,47 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>EmaBot - Colegio Integral Emanuel</title>
+<title>EmaBot – Colegio Integral Emanuel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body { font-family: Arial, sans-serif; }
-
-#chat-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #1f6feb;
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 26px;
-  cursor: pointer;
+#chat-btn{
+  position:fixed; bottom:20px; right:20px;
+  width:60px; height:60px; border-radius:50%;
+  background:#1f6feb; color:#fff;
+  font-size:26px; border:none; cursor:pointer;
+  z-index:9999;
 }
-
-#chat-box {
-  display: none;
-  position: fixed;
-  bottom: 90px;
-  right: 20px;
-  width: 340px;
-  height: 500px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  overflow: hidden;
+#chat-box{
+  display:none; position:fixed; bottom:90px; right:20px;
+  width:320px; background:#fff; border-radius:10px;
+  box-shadow:0 4px 15px rgba(0,0,0,.3);
+  overflow:hidden; z-index:9999;
 }
-
-#chat-header {
-  background: #1f6feb;
-  color: #fff;
-  padding: 12px;
-  font-weight: bold;
-  display: flex;
-  justify-content: space-between;
+#chat-header{
+  background:#1f6feb; color:#fff; padding:12px;
+  font-weight:bold; display:flex;
+  justify-content:space-between;
 }
-
-#chat-messages {
-  padding: 10px;
-  height: 300px;
-  overflow-y: auto;
-  background: #f4f6f8;
-  white-space: pre-line;
+#chat-messages{
+  padding:10px; height:280px;
+  overflow-y:auto; background:#f4f6f8;
 }
-
-.msg {
-  background: #fff;
-  padding: 8px;
-  margin-bottom: 8px;
-  border-radius: 8px;
+.msg{background:#fff; padding:8px;
+  border-radius:8px; margin-bottom:6px;
 }
-
-.user {
-  background: #dff3ff;
-  text-align: right;
+.user{background:#dff3ff; text-align:right}
+#chat-input{
+  display:flex; gap:5px; padding:10px;
 }
-
-#chat-options {
-  padding: 10px;
-  display: grid;
-  gap: 8px;
+#chat-input input{
+  flex:1; padding:8px;
+  border-radius:8px; border:1px solid #ccc;
 }
-
-.option-btn {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  background: #fff;
+#chat-input button{
+  background:#1f6feb; color:#fff;
+  border:none; border-radius:8px;
+  padding:8px 10px; cursor:pointer;
 }
 </style>
 </head>
@@ -87,121 +54,95 @@ body { font-family: Arial, sans-serif; }
 <div id="chat-box">
   <div id="chat-header">
     🤖 EmaBot – Colegio Integral Emanuel
-    <span onclick="toggleChat()" style="cursor:pointer;">✖</span>
+    <span onclick="toggleChat()" style="cursor:pointer">✖</span>
   </div>
 
   <div id="chat-messages"></div>
 
-  <div id="chat-options">
-    <button class="option-btn" onclick="sendAnswer('contacto')">📞 Contacto</button>
-    <button class="option-btn" onclick="sendAnswer('preescolar')">👶 Preescolar</button>
-    <button class="option-btn" onclick="sendAnswer('primaria')">📘 Primaria</button>
-    <button class="option-btn" onclick="sendAnswer('secundaria')">🎓 Secundaria</button>
-    <button class="option-btn" onclick="sendAnswer('direccion')">📍 Dirección</button>
-    <button class="option-btn" onclick="sendAnswer('whatsapp')">📲 WhatsApp</button>
+  <div id="chat-input">
+    <input id="user-input" placeholder="Escribe tu pregunta…">
+    <button onclick="sendText()">Enviar</button>
+    <button onclick="startVoice()">🎤</button>
   </div>
 </div>
 
 <script>
-const chatBtn = document.getElementById("chat-btn");
-const chatBox = document.getElementById("chat-box");
-const messages = document.getElementById("chat-messages");
+const chatBtn=document.getElementById("chat-btn");
+const chatBox=document.getElementById("chat-box");
+const messages=document.getElementById("chat-messages");
+let greeted=false;
 
-chatBtn.onclick = toggleChat;
+chatBtn.onclick=toggleChat;
 
-// ⏰ HORARIO
-const horaInicio = 7;
-const horaFin = 15;
+function toggleChat(){
+  chatBox.style.display=
+    chatBox.style.display==="block"?"none":"block";
 
-// 📖 TEXTO BÍBLICO DEL DÍA (UNA SOLA VEZ)
-const textosBiblicos = [
-  "📖 El texto bíblico de hoy es:\n\"Instruye al niño en su camino, y aun cuando fuere viejo no se apartará de él.\" (Proverbios 22:6)",
-  "📖 El texto bíblico de hoy es:\n\"Todo lo puedo en Cristo que me fortalece.\" (Filipenses 4:13)",
-  "📖 El texto bíblico de hoy es:\n\"La sabiduría viene del Señor.\" (Proverbios 2:6)",
-  "📖 El texto bíblico de hoy es:\n\"El Señor te bendiga y te guarde.\" (Números 6:24)"
-];
-
-const textoDelDia = textosBiblicos[Math.floor(Math.random() * textosBiblicos.length)];
-let textoBiblicoMostrado = false;
-
-function dentroDeHorario() {
-  const h = new Date().getHours();
-  return h >= horaInicio && h < horaFin;
-}
-
-function addBotMessage(text) {
-  const div = document.createElement("div");
-  div.className = "msg";
-  div.innerText = text;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
-}
-
-function toggleChat() {
-  chatBox.style.display = chatBox.style.display === "block" ? "none" : "block";
-
-  if (messages.innerHTML === "") {
-    addBotMessage(
-      "👋 Bienvenido al Colegio Integral Emanuel.\n\n" +
-      "Soy EmaBot, el asistente virtual institucional.\n\n" +
-      "⏰ Horario de atención:\nLunes a Viernes, 7:00 a.m. a 3:00 p.m."
-    );
-
-    if (!textoBiblicoMostrado) {
-      addBotMessage(textoDelDia);
-      textoBiblicoMostrado = true;
-    }
+  if(!greeted){
+    addBot("👋 Bienvenido al Colegio Integral Emanuel.");
+    addBot("Soy EmaBot, el asistente virtual institucional.");
+    addBot("⏰ Horario de atención: Lunes a Viernes, 7:00 a.m. a 3:00 p.m.");
+    addBot("📖 El texto bíblico de hoy es:\n“Instruye al niño en su camino…” (Proverbios 22:6)");
+    addBot("😊 ¿En qué más podemos ayudarte?");
+    greeted=true;
   }
 }
 
-function redirigirWhatsApp() {
-  window.open("https://wa.me/50588543012", "_blank");
+function addBot(text){
+  const d=document.createElement("div");
+  d.className="msg"; d.innerText=text;
+  messages.appendChild(d);
+  messages.scrollTop=messages.scrollHeight;
 }
 
-function sendAnswer(type) {
-  if (!dentroDeHorario()) {
-    addBotMessage(
-      "⏰ En este momento estamos fuera del horario de atención.\n" +
-      "📲 Puede escribirnos por WhatsApp y con gusto le atenderemos.\n\n" +
-      "Bendiciones, quedamos a su disposición."
-    );
-    redirigirWhatsApp();
+function addUser(text){
+  const d=document.createElement("div");
+  d.className="msg user"; d.innerText=text;
+  messages.appendChild(d);
+  messages.scrollTop=messages.scrollHeight;
+}
+
+function normalize(t){
+  return t.toLowerCase().normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,"");
+}
+
+function sendText(){
+  const input=document.getElementById("user-input");
+  if(!input.value)return;
+  handleQuestion(input.value);
+  input.value="";
+}
+
+function handleQuestion(q){
+  addUser(q);
+  const t=normalize(q);
+
+  if(t.includes("direccion")||t.includes("ubicacion")){
+    addBot("📍 Costado Este del Maxipali, 25 varas al norte.");
+    return;
+  }
+  if(t.includes("mensualidad")){
+    addBot("📅 La mensualidad es de C$ 1,450.");
+    return;
+  }
+  if(t.includes("matricula")){
+    addBot("💵 La información de matrícula se brinda por WhatsApp.");
     return;
   }
 
-  let response = "";
+  addBot("📲 Te atendemos directamente por WhatsApp.");
+  addBot("Bendiciones, quedamos a su disposición.");
+  window.open("https://wa.me/50588543012","_blank");
+}
 
-  if (type === "contacto") {
-    response =
-      "📍 Dirección:\nCostado Este del MaxiPalí, 25 varas al norte.\n\n" +
-      "📲 WhatsApp: 505 8854 3012\n\n" +
-      "⏰ Horario:\nLunes a Viernes, 7:00 a.m. a 3:00 p.m.";
+function startVoice(){
+  const rec=new(window.SpeechRecognition||window.webkitSpeechRecognition)();
+  rec.lang="es-ES";
+  rec.start();
+  rec.onresult=e=>{
+    handleQuestion(e.results[0][0].transcript);
   }
-  else if (type === "preescolar")
-    response = "👶 Nivel Preescolar:\nFormación integral, valores cristianos y aprendizaje lúdico.";
-  else if (type === "primaria")
-    response = "📘 Nivel Primaria:\nEducación académica sólida, valores y acompañamiento docente.";
-  else if (type === "secundaria")
-    response = "🎓 Nivel Secundaria:\nPreparación académica, orientación vocacional y formación integral.";
-  else if (type === "direccion")
-    response = "📍 Costado Este del MaxiPalí, 25 varas al norte.";
-  else if (type === "whatsapp") {
-    addBotMessage("📲 Le estamos redirigiendo a WhatsApp para atención personalizada.\n\nBendiciones, quedamos a su disposición.");
-    redirigirWhatsApp();
-    return;
-  }
-  else {
-    // ❗ NO SABE → WHATSAPP DIRECTO
-    addBotMessage(
-      "📲 No contamos con esa información en este momento.\n" +
-      "Le estamos redirigiendo a WhatsApp para atención personalizada.\n\n" +
-      "Bendiciones, quedamos a su disposición."
-    );
-    redirigirWhatsApp();
-    return;
-  }
-
-  addBotMessage(response + "\n\nBendiciones, quedamos a su disposición.");
 }
 </script>
 
