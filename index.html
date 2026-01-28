@@ -1,129 +1,186 @@
-<script>
-/* =========================
-   🔊 CONFIGURACIÓN DE VOZ
-========================= */
-let vozActiva = true;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-function hablar(texto) {
-  if (!vozActiva) return;
-  const mensaje = new SpeechSynthesisUtterance(texto);
-  mensaje.lang = "es-ES";
-  mensaje.rate = 1;
-  mensaje.pitch = 1;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(mensaje);
+<style>
+body { font-family: Arial, sans-serif; }
+
+#chat-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background: #1f6feb;
+  color: white;
+  border-radius: 50%;
+  border: none;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 9999;
 }
 
-/* =========================
-   💬 MENSAJES
-========================= */
-function addBotMessage(texto) {
-  const cont = document.getElementById("chat-messages");
+#chat-box {
+  position: fixed;
+  bottom: 90px;
+  right: 15px;
+  width: 95%;
+  max-width: 360px;
+  height: 80vh;
+  max-height: 520px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  display: none;
+  flex-direction: column;
+  z-index: 9999;
+}
+
+#chat-header {
+  background: #1f6feb;
+  color: white;
+  padding: 12px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#chat-messages {
+  padding: 12px;
+  overflow-y: auto;
+  flex: 1;
+  background: #f4f6f8;
+}
+
+.msg {
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.user {
+  background: #dff3ff;
+  text-align: right;
+}
+
+#chat-input {
+  display: flex;
+  padding: 10px;
+  gap: 5px;
+}
+
+#chat-input input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+#chat-input button {
+  padding: 8px 12px;
+  background: #1f6feb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<button id="chat-btn">💬</button>
+
+<div id="chat-box">
+  <div id="chat-header">
+    🤖 EmaBot – Colegio Integral Emanuel
+    <span style="cursor:pointer;" onclick="toggleChat()">✖</span>
+  </div>
+
+  <div id="chat-messages"></div>
+
+  <div id="chat-input">
+    <input id="user-input" placeholder="Escribe tu pregunta...">
+    <button onclick="send()">Enviar</button>
+    <button onclick="activarVoz()">🔊</button>
+  </div>
+</div>
+
+<script>
+const chatBox = document.getElementById("chat-box");
+const messages = document.getElementById("chat-messages");
+let vozActivada = false;
+
+document.getElementById("chat-btn").onclick = toggleChat;
+
+function toggleChat() {
+  chatBox.style.display = chatBox.style.display === "flex" ? "none" : "flex";
+
+  if (messages.innerHTML === "") {
+    bot("👋 Bienvenido al Colegio Integral Emanuel.");
+    bot("Soy EmaBot, tu asistente virtual institucional.");
+    bot("🕒 Horario: Lunes a Viernes, 7:00 a.m. a 3:00 p.m.");
+    bot("📖 Texto bíblico de hoy: \"Instruye al niño en su camino...\" (Proverbios 22:6)");
+    bot("😊 ¿En qué más podemos ayudarte?");
+  }
+}
+
+function bot(texto) {
   const div = document.createElement("div");
   div.className = "msg";
   div.innerText = texto;
-  cont.appendChild(div);
-  cont.scrollTop = cont.scrollHeight;
-  hablar(texto);
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+
+  if (vozActivada) hablar(texto);
 }
 
-function addUserMessage(texto) {
-  const cont = document.getElementById("chat-messages");
+function user(texto) {
   const div = document.createElement("div");
   div.className = "msg user";
   div.innerText = texto;
-  cont.appendChild(div);
-  cont.scrollTop = cont.scrollHeight;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
 }
 
-/* =========================
-   🧠 NORMALIZAR TEXTO
-========================= */
-function normalizeText(text) {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim();
+function hablar(texto) {
+  const speech = new SpeechSynthesisUtterance(texto);
+  speech.lang = "es-ES";
+  speech.rate = 1;
+  speechSynthesis.speak(speech);
 }
 
-/* =========================
-   👋 SALUDO INICIAL (UNA SOLA VEZ)
-========================= */
-let saludoDado = false;
-
-function saludoInicial() {
-  if (saludoDado) return;
-  saludoDado = true;
-
-  addBotMessage("👋 Bienvenido al Colegio Integral Emanuel.");
-  addBotMessage("Soy EmaBot, el asistente virtual institucional.");
-  addBotMessage("⏰ Horario de atención: Lunes a Viernes, de 7:00 a.m. a 3:00 p.m.");
-  addBotMessage(
-    "📖 El texto bíblico de hoy es: “Instruye al niño en su camino, y aun cuando fuere viejo no se apartará de él.” Proverbios 22:6"
-  );
-  addBotMessage("😊 ¿En qué más podemos ayudarte?");
+function activarVoz() {
+  vozActivada = true;
+  hablar("La voz del asistente ha sido activada.");
 }
 
-/* =========================
-   📨 MANEJO DE PREGUNTAS
-========================= */
-function handleUserQuestion() {
+function send() {
   const input = document.getElementById("user-input");
-  if (!input || !input.value) return;
+  const q = input.value.trim().toLowerCase();
+  if (!q) return;
 
-  const pregunta = input.value;
-  addUserMessage(pregunta);
+  user(input.value);
   input.value = "";
 
-  const q = normalizeText(pregunta);
-
-  if (q.includes("direccion") || q.includes("ubicacion")) {
-    addBotMessage("📍 Costado Este del MaxiPali, 25 varas al norte.");
-    cerrarConBendicion();
-    return;
-  }
-
-  if (q.includes("mensualidad") || q.includes("cuota")) {
-    addBotMessage("💵 La mensualidad es de C$ 1,450.");
-    cerrarConBendicion();
-    return;
-  }
-
-  if (q.includes("matricula") || q.includes("inscripcion")) {
-    addBotMessage("📲 La información de matrícula se brinda directamente por WhatsApp.");
+  if (q.includes("direccion")) {
+    bot("📍 Costado Este del MaxiPali, 25 varas al norte.");
+  } else if (q.includes("mensualidad")) {
+    bot("💰 La mensualidad es de C$ 1,450.");
+  } else if (q.includes("matricula")) {
+    bot("📲 Para matrícula, contáctanos directamente por WhatsApp.");
     window.open("https://wa.me/50588543012", "_blank");
-    cerrarConBendicion();
-    return;
+  } else {
+    bot("📲 Te redirigimos a WhatsApp para ayudarte mejor.");
+    window.open("https://wa.me/50588543012", "_blank");
   }
-
-  if (q.includes("ofrece") || q.includes("servicios")) {
-    addBotMessage(
-      "🎓 Ofrecemos educación integral, formación en valores cristianos, docentes capacitados y un ambiente seguro."
-    );
-    cerrarConBendicion();
-    return;
-  }
-
-  // ❓ NO SABE → WHATSAPP DIRECTO
-  addBotMessage("📲 No tengo esa información registrada. Te atendemos directamente por WhatsApp.");
-  window.open("https://wa.me/50588543012", "_blank");
-  cerrarConBendicion();
 }
-
-/* =========================
-   ✝️ DESPEDIDA
-========================= */
-function cerrarConBendicion() {
-  setTimeout(() => {
-    addBotMessage("🙏 Bendiciones, quedamos a su disposición.");
-  }, 800);
-}
-
-/* =========================
-   🚀 INICIAR
-========================= */
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(saludoInicial, 800);
-});
 </script>
+
+</body>
+</html>
+
