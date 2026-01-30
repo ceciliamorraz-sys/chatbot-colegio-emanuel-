@@ -6,526 +6,484 @@
   <title>EmaBot - Colegio Integral Emanuel</title>
 
   <style>
-    :root{
-      --primary:#1f6feb;
-      --bg:#f4f6fb;
-      --card:#ffffff;
-      --text:#1b1f24;
-      --muted:#5b6572;
-      --border:#e3e7ef;
-      --shadow: 0 10px 28px rgba(0,0,0,.18);
-      --radius:16px;
-    }
-
-    body{ font-family: Arial, sans-serif; margin:0; }
+    body { font-family: Arial, sans-serif; }
 
     /* Botón flotante */
     #chat-btn{
-      position:fixed; right:18px; bottom:18px;
-      width:62px; height:62px; border-radius:50%;
-      border:none; cursor:pointer;
-      background:var(--primary); color:#fff; font-size:26px;
-      box-shadow: 0 8px 18px rgba(31,111,235,.35);
-      z-index:999999;
-      display:flex; align-items:center; justify-content:center;
+      position: fixed; bottom: 20px; right: 20px;
+      background: #1f6feb; color: #fff; border: none;
+      border-radius: 50%; width: 60px; height: 60px;
+      font-size: 26px; cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 99999;
     }
 
     /* Caja del chat */
     #chat-box{
-      position:fixed; right:18px; bottom:92px;
-      width:380px; height:560px;
-      background:var(--card);
-      border-radius:18px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      z-index:999999;
       display:none;
-      border:1px solid rgba(0,0,0,.06);
+      position: fixed; bottom: 90px; right: 20px;
+      width: 360px; max-width: calc(100vw - 40px);
+      height: 520px; max-height: calc(100vh - 140px);
+      background:#fff; border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+      overflow:hidden;
+      z-index: 99999;
     }
 
+    /* Responsive teléfono */
+    @media (max-width: 520px){
+      #chat-box{
+        right: 10px; left: 10px;
+        width: auto;
+        bottom: 80px;
+        height: 70vh; max-height: 70vh;
+      }
+      #chat-btn{ right: 14px; bottom: 14px; }
+    }
+
+    /* Header */
     #chat-header{
-      background:var(--primary);
-      color:#fff;
-      padding:12px 12px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
+      background:#1f6feb; color:#fff;
+      padding:12px 14px;
+      display:flex; align-items:center; justify-content:space-between;
+      font-weight:bold;
       gap:10px;
     }
-
     #chat-header .title{
-      display:flex; align-items:center; gap:10px;
-      font-weight:bold;
-      min-width:0;
+      display:flex; align-items:center; gap:8px;
+      min-width: 0;
     }
     #chat-header .title span{
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:220px;
-      display:inline-block;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      display:block; max-width: 220px;
     }
-
-    #chat-header .actions{
-      display:flex; align-items:center; gap:10px;
-    }
+    #chat-header .actions{ display:flex; gap:10px; align-items:center; }
     #chat-header button{
       background:transparent; border:none; color:#fff;
       font-size:18px; cursor:pointer;
-      width:34px; height:34px; border-radius:8px;
     }
-    #chat-header button:hover{ background:rgba(255,255,255,.16); }
 
+    /* Mensajes */
     #chat-messages{
-      padding:12px;
-      height:380px;
-      overflow:auto;
-      background:var(--bg);
+      padding: 12px;
+      height: 330px;
+      overflow-y: auto;
+      background:#f4f6f8;
     }
-
     .msg{
-      max-width:92%;
-      padding:10px 12px;
-      border-radius:14px;
-      margin:8px 0;
-      line-height:1.25;
-      word-wrap:break-word;
-      border:1px solid rgba(0,0,0,.04);
-    }
-    .bot{
       background:#fff;
-      color:var(--text);
-      border-top-left-radius:6px;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      line-height: 1.35;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     }
-    .user{
-      margin-left:auto;
-      background:rgba(31,111,235,.10);
-      border:1px solid rgba(31,111,235,.20);
-      color:#0b2a61;
-      border-top-right-radius:6px;
-      text-align:right;
+    .msg.bot{ border-left: 4px solid #1f6feb; }
+    .msg.user{
+      background:#e8f1ff;
+      border-left: 4px solid #0b5bd3;
     }
-    .muted{ color:var(--muted); font-size:12px; margin-top:6px; }
 
-    /* Panel opciones (radio + continuar) */
-    #options-panel{
-      padding:10px 12px;
+    /* Bloque opciones */
+    #options{
+      padding: 10px 12px;
+      border-top: 1px solid #e6e6e6;
       background:#fff;
-      border-top:1px solid var(--border);
     }
-    .panel-title{
-      background:#fff4e6;
-      border:1px solid #ffd8a8;
+    #options .label{
+      font-weight: bold;
+      background:#fff3e6;
+      border:1px solid #ffd2a6;
       padding:10px 12px;
-      border-radius:12px;
-      font-weight:bold;
+      border-radius: 12px;
       margin-bottom:10px;
     }
-    .radio-list{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:6px;
-      background:#fff;
-    }
-    .radio-item{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 10px;
-      border-radius:12px;
+    .opt{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border:1px solid #e6e6e6;
+      border-radius: 12px;
+      margin-bottom:8px;
       cursor:pointer;
+      user-select:none;
     }
-    .radio-item:hover{ background:#f7f9ff; }
-    .radio-item input{ transform:scale(1.1); }
-    .radio-item .label{ flex:1; }
-    .radio-item .emoji{ width:24px; text-align:center; }
+    .opt:hover{ background:#f7fbff; }
 
-    .btn-row{
-      display:flex;
-      gap:10px;
-      margin-top:10px;
-    }
-    .btn{
-      flex:1;
-      border:none;
-      cursor:pointer;
-      border-radius:12px;
-      padding:12px 12px;
-      font-weight:bold;
-    }
-    .btn-primary{
-      background:var(--primary);
-      color:#fff;
-    }
-    .btn-outline{
-      background:#fff;
-      color:var(--primary);
-      border:1px solid rgba(31,111,235,.35);
-    }
-
-    /* Input + enviar */
-    #chat-input-area{
-      display:flex;
-      gap:10px;
-      padding:12px;
-      background:#fff;
-      border-top:1px solid var(--border);
-    }
+    /* Input */
     #chat-input{
-      flex:1;
-      padding:12px 12px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      outline:none;
-      font-size:14px;
+      display:flex;
+      gap:10px;
+      padding: 10px 12px;
+      border-top: 1px solid #e6e6e6;
+      background:#fff;
     }
-    #send-btn{
-      padding:12px 14px;
-      border:none;
-      border-radius:12px;
-      background:var(--primary);
-      color:#fff;
+    #chat-input input{
+      flex:1;
+      padding:10px 12px;
+      border-radius: 10px;
+      border:1px solid #d9d9d9;
+      outline:none;
+    }
+    #chat-input button{
+      background:#1f6feb; color:#fff; border:none;
+      padding: 10px 14px;
+      border-radius: 10px;
       cursor:pointer;
       font-weight:bold;
     }
-    #send-btn:hover{ filter:brightness(.95); }
 
-    /* Responsive: móvil */
-    @media (max-width:520px){
-      #chat-box{
-        right:10px; left:10px;
-        bottom:86px;
-        width:auto;
-        height:72vh;
-      }
-      #chat-messages{ height:calc(72vh - 56px - 170px); }
-      #chat-header .title span{ max-width:190px; }
+    /* Botón grande para iniciar voz */
+    #start-voice{
+      width:100%;
+      padding:12px;
+      margin:10px 0;
+      border:none;
+      border-radius:12px;
+      background:#1f6feb;
+      color:white;
+      font-weight:bold;
+      cursor:pointer;
     }
+
+    /* Formulario (modal simple) */
+    #contact-modal{
+      display:none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 999999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    #contact-modal .card{
+      width: 520px; max-width: 100%;
+      background:#fff;
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+    #contact-modal .card header{
+      background:#1f6feb; color:#fff;
+      padding: 12px 14px;
+      display:flex; justify-content:space-between; align-items:center;
+      font-weight:bold;
+    }
+    #contact-modal .card header button{
+      background:transparent; border:none; color:#fff;
+      font-size:18px; cursor:pointer;
+    }
+    #contact-modal .card .body{ padding: 14px; }
+    #contact-modal label{ display:block; font-weight:bold; margin-top:10px; }
+    #contact-modal input, #contact-modal textarea{
+      width:100%;
+      margin-top:6px;
+      padding:10px 12px;
+      border:1px solid #d9d9d9;
+      border-radius: 10px;
+      outline:none;
+      font-family: Arial, sans-serif;
+    }
+    #contact-modal textarea{ min-height: 110px; resize: vertical; }
+    #contact-modal .actions{
+      display:flex; gap:10px; justify-content:flex-end;
+      margin-top: 12px;
+    }
+    #contact-modal .actions button{
+      border:none; border-radius:10px; padding:10px 14px;
+      cursor:pointer; font-weight:bold;
+    }
+    #btn-cancel{ background:#e9e9e9; }
+    #btn-send{ background:#1f6feb; color:#fff; }
+    .small{ font-size: 12px; color:#666; margin-top:8px; }
   </style>
 </head>
 
 <body>
 
   <!-- Botón flotante -->
-  <button id="chat-btn" aria-label="Abrir EmaBot">💬</button>
+  <button id="chat-btn" aria-label="Abrir chat">💬</button>
 
   <!-- Chat -->
-  <div id="chat-box" role="dialog" aria-label="EmaBot - Colegio Integral Emanuel">
+  <div id="chat-box">
     <div id="chat-header">
       <div class="title">
         <span>🤖 EmaBot – Colegio Integral Emanuel</span>
       </div>
       <div class="actions">
-        <button id="voice-btn" title="Voz (habla)" aria-label="Voz">🔊</button>
-        <button id="close-btn" title="Cerrar" aria-label="Cerrar">✕</button>
+        <button id="voice-toggle" title="Activar/Desactivar voz">🔇</button>
+        <button id="close-chat" title="Cerrar">✕</button>
       </div>
     </div>
 
     <div id="chat-messages"></div>
 
-    <div id="options-panel">
-      <div class="panel-title">Seleccione una opción:</div>
+    <div id="options">
+      <div class="label">Seleccione una opción:</div>
 
-      <div class="radio-list" id="radio-list">
-        <label class="radio-item">
-          <input type="radio" name="op" value="direccion">
-          <div class="emoji">📍</div>
-          <div class="label">Dirección</div>
-        </label>
+      <!-- Botón para habilitar voz (requerido en teléfono) -->
+      <button id="start-voice">🔊 Iniciar voz (como Alexa)</button>
 
-        <label class="radio-item">
-          <input type="radio" name="op" value="matricula">
-          <div class="emoji">🧾</div>
-          <div class="label">Matrícula</div>
-        </label>
-
-        <label class="radio-item">
-          <input type="radio" name="op" value="mensualidad">
-          <div class="emoji">💳</div>
-          <div class="label">Mensualidad</div>
-        </label>
-
-        <label class="radio-item">
-          <input type="radio" name="op" value="horario">
-          <div class="emoji">⏰</div>
-          <div class="label">Horario</div>
-        </label>
-
-        <label class="radio-item">
-          <input type="radio" name="op" value="ofrece">
-          <div class="emoji">🎓</div>
-          <div class="label">¿Qué ofrece?</div>
-        </label>
-
-        <label class="radio-item">
-          <input type="radio" name="op" value="requisitos">
-          <div class="emoji">✅</div>
-          <div class="label">Requisitos de inscripción</div>
-        </label>
-
-        <label class="radio-item">
-          <input type="radio" name="op" value="uniforme">
-          <div class="emoji">👕</div>
-          <div class="label">Uniforme</div>
-        </label>
-
-        <label class="radio-item">
-          <input type="radio" name="op" value="contacto">
-          <div class="emoji">📝</div>
-          <div class="label">Formulario de contacto</div>
-        </label>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn btn-outline" id="help-btn" type="button">¿En qué más?</button>
-        <button class="btn btn-primary" id="continue-btn" type="button">Continuar</button>
-      </div>
-
-      <div class="muted">
-        Tip: En teléfono, la voz solo funciona después de tocar el botón 🔊 o abrir el chat.
-      </div>
+      <div class="opt" data-key="direccion">📍 Dirección</div>
+      <div class="opt" data-key="matricula">💵 Matrícula</div>
+      <div class="opt" data-key="mensualidad">🧾 Mensualidad</div>
+      <div class="opt" data-key="horario">⏰ Horario</div>
+      <div class="opt" data-key="ofrece">🎓 ¿Qué ofrece?</div>
+      <div class="opt" data-key="contacto">📝 Formulario de contacto</div>
+      <div class="opt" data-key="whatsapp">📲 WhatsApp</div>
     </div>
 
-    <div id="chat-input-area">
-      <input id="chat-input" type="text" placeholder="Escribe tu pregunta aquí..." />
-      <button id="send-btn" type="button">Enviar</button>
+    <div id="chat-input">
+      <input id="user-input" type="text" placeholder="Escribe tu pregunta aquí..." />
+      <button id="send-btn">Enviar</button>
+    </div>
+  </div>
+
+  <!-- Modal Formulario -->
+  <div id="contact-modal">
+    <div class="card">
+      <header>
+        <span>📝 Formulario de contacto</span>
+        <button id="close-modal">✕</button>
+      </header>
+      <div class="body">
+        <label>Nombre</label>
+        <input id="c-name" type="text" placeholder="Tu nombre" />
+
+        <label>Teléfono</label>
+        <input id="c-phone" type="tel" placeholder="Ej: 8888-8888" />
+
+        <label>Correo</label>
+        <input id="c-email" type="email" placeholder="correo@ejemplo.com" />
+
+        <label>Mensaje</label>
+        <textarea id="c-msg" placeholder="Escribe tu consulta..."></textarea>
+
+        <div class="small">
+          Nota: Este formulario se enviará por WhatsApp al número institucional.
+        </div>
+
+        <div class="actions">
+          <button id="btn-cancel">Cancelar</button>
+          <button id="btn-send">Enviar</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
-    /*********************
-     * CONFIGURACIÓN
-     *********************/
-    const WHATSAPP_NUMBER = "58753725"; // tu número
-    const SCHOOL_NAME = "Colegio Integral Emanuel";
-
-    // Respuestas (ajusta lo que necesites)
-    const FAQ = {
-      direccion: "📍 Dirección: Costado Este del MaxiPali, 25 varas al norte.",
-      matricula: "🧾 Matrícula: Para información de costos y cupos disponibles, contáctanos y con gusto te atendemos.",
-      mensualidad: "💳 Mensualidad: Varía según el nivel. Escríbenos y te compartimos la información actualizada.",
-      horario: "⏰ Horario de atención: Lunes a Viernes, 7:00 a.m. a 3:00 p.m.",
-      ofrece: "🎓 Ofrecemos educación integral, formación en valores, docentes capacitados y acompañamiento académico.",
-      requisitos: "✅ Requisitos de inscripción: Copia de partida de nacimiento, copia de cédula del tutor, récord de notas/traslado (si aplica) y completar ficha de matrícula.",
-      uniforme: "👕 Uniforme: Consulta el modelo y colores oficiales por WhatsApp para enviarte la guía actualizada.",
-    };
-
-    /*********************
-     * VOZ (TTS)
-     *********************/
-    let voiceEnabled = false;
-    let greetedOnce = false;
-
-    function speak(text){
-      if (!voiceEnabled) return;
-      if (!("speechSynthesis" in window)) return;
-
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = "es-ES";
-      u.rate = 1;
-      u.pitch = 1;
-
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(u);
-    }
-
-    /*********************
-     * UI HELPERS
-     *********************/
+    // ====== Elementos ======
     const chatBtn = document.getElementById("chat-btn");
     const chatBox = document.getElementById("chat-box");
-    const closeBtn = document.getElementById("close-btn");
-    const voiceBtn = document.getElementById("voice-btn");
-    const chatMessages = document.getElementById("chat-messages");
-    const chatInput = document.getElementById("chat-input");
-    const sendBtn = document.getElementById("send-btn");
-    const continueBtn = document.getElementById("continue-btn");
-    const helpBtn = document.getElementById("help-btn");
+    const closeChat = document.getElementById("close-chat");
 
+    const messages = document.getElementById("chat-messages");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    const options = document.querySelectorAll(".opt");
+
+    const voiceBtn = document.getElementById("voice-toggle");
+    const startVoiceBtn = document.getElementById("start-voice");
+
+    const modal = document.getElementById("contact-modal");
+    const closeModal = document.getElementById("close-modal");
+    const btnCancel = document.getElementById("btn-cancel");
+    const btnSend = document.getElementById("btn-send");
+
+    // ====== Config ======
+    const WHATSAPP_NUMBER = "58753725"; // tu número
+    let voiceEnabled = false;
+
+    // ====== Utilidades ======
     function addMessage(text, who="bot"){
       const div = document.createElement("div");
-      div.className = "msg " + (who === "user" ? "user" : "bot");
+      div.className = `msg ${who}`;
       div.textContent = text;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
 
-      if (who === "bot") speak(text);
-    }
-
-    function openChat(){
-      chatBox.style.display = "block";
-
-      // Saludo SOLO una vez (y con voz si ya estaba activada o si el usuario activará luego)
-      if (!window.__ema_inited){
-        window.__ema_inited = true;
-        addMessage("👋 Bienvenido(a) al " + SCHOOL_NAME + ".");
-        addMessage("Soy EmaBot, su asistente virtual institucional.");
-        addMessage("⏰ Horario de atención: Lunes a Viernes, 7:00 a.m. a 3:00 p.m.");
-        addMessage("😊 ¿En qué más podemos ayudarle?");
-      }
-
-      // Si ya está la voz activada, saluda con voz aquí (solo una vez)
-      if (voiceEnabled && !greetedOnce){
-        greetedOnce = true;
-        speak("Hola, soy EmaBot. Bienvenido al " + SCHOOL_NAME + ". ¿En qué más podemos ayudarle?");
+      // Hablar si está habilitado y es bot
+      if(who === "bot" && voiceEnabled){
+        speak(text);
       }
     }
 
-    function closeChat(){
-      chatBox.style.display = "none";
+    function speak(text){
+      try{
+        if(!("speechSynthesis" in window)) return;
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "es-ES";
+
+        // intentar elegir voz española si existe
+        const voices = window.speechSynthesis.getVoices();
+        const prefer = voices.find(v => (v.lang || "").toLowerCase().startsWith("es"));
+        if(prefer) u.voice = prefer;
+
+        window.speechSynthesis.speak(u);
+      }catch(e){
+        // silencioso
+      }
     }
 
-    function getSelectedOption(){
-      const checked = document.querySelector('input[name="op"]:checked');
-      return checked ? checked.value : null;
-    }
-
-    function openWhatsApp(text){
-      const msg = encodeURIComponent(text);
-      // wa.me directo al número
-      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`;
+    function openWhatsApp(message){
+      const url = `https://wa.me/505${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
       window.open(url, "_blank");
     }
 
-    /*********************
-     * LÓGICA DEL BOT
-     *********************/
-    function handleOption(option){
-      if (!option){
-        addMessage("Por favor seleccione una opción y toque “Continuar”, o escriba su pregunta.");
+    function botAnswer(input){
+      const t = (input || "").toLowerCase().trim();
+
+      // Si pregunta cosas fuera, mandamos WhatsApp directo
+      const unknownFallback = () => {
+        addMessage("No tengo esa información aquí. Con gusto le atendemos por WhatsApp ✅");
+        openWhatsApp("Hola, necesito información del Colegio Integral Emanuel. ¿Me pueden apoyar?");
+      };
+
+      // Respuestas por palabras clave
+      if(t.includes("direccion") || t.includes("dirección") || t.includes("ubicacion") || t.includes("ubicación")){
+        addMessage("📍 Dirección: Costado Este del MaxiPali, 25 varas al norte.");
+        return;
+      }
+      if(t.includes("matricula") || t.includes("matrícula")){
+        addMessage("💵 Matrícula: Para información exacta, contáctenos por WhatsApp y con gusto le atendemos.");
+        openWhatsApp("Hola, ¿me brindan el costo de matrícula y requisitos, por favor?");
+        return;
+      }
+      if(t.includes("mensualidad")){
+        addMessage("🧾 Mensualidad: Para confirmar costos por grado, escríbanos por WhatsApp.");
+        openWhatsApp("Hola, ¿me brindan el costo de mensualidad por grado, por favor?");
+        return;
+      }
+      if(t.includes("horario")){
+        addMessage("⏰ Horario de atención: Lunes a Viernes, 7:00 a.m. a 3:00 p.m.");
+        return;
+      }
+      if(t.includes("ofrece") || t.includes("ofrecen") || t.includes("servicios")){
+        addMessage("🎓 Ofrecemos educación integral, formación en valores, docentes capacitados y acompañamiento a las familias.");
+        addMessage("Si desea más detalles (grados, requisitos, cupos), escriba por WhatsApp y le guiamos.");
+        openWhatsApp("Hola, quisiera información sobre qué ofrece el colegio (grados, requisitos y cupos).");
+        return;
+      }
+      if(t.includes("whatsapp") || t.includes("contacto") || t.includes("telefono") || t.includes("teléfono")){
+        addMessage("📲 Puede escribirnos directamente por WhatsApp. Le abriré el enlace ahora ✅");
+        openWhatsApp("Hola, deseo información del Colegio Integral Emanuel.");
         return;
       }
 
-      if (option === "contacto"){
-        showContactForm();
-        return;
-      }
-
-      const ans = FAQ[option];
-      if (ans){
-        addMessage(ans);
-        addMessage("✨ Bendiciones. Quedamos a su disposición.");
-      }else{
-        const fallback = "No tengo esa información en este momento. ¿Desea escribirnos por WhatsApp para atenderle mejor?";
-        addMessage(fallback);
-        openWhatsApp("Hola, necesito información del Colegio Integral Emanuel. Mi consulta es: " + option);
-      }
+      // Si no reconoce
+      unknownFallback();
     }
 
-    function handleTextQuestion(q){
-      const text = (q || "").trim();
-      if (!text) return;
-
-      addMessage(text, "user");
-
-      const lower = text.toLowerCase();
-
-      // Mini-intents simples (puedes ampliar)
-      if (lower.includes("direccion") || lower.includes("dirección")){
-        addMessage(FAQ.direccion);
-        addMessage("✨ Bendiciones. Quedamos a su disposición.");
-        return;
-      }
-      if (lower.includes("matricula") || lower.includes("matrícula") || lower.includes("inscrib")){
-        addMessage(FAQ.requisitos);
-        addMessage("🧾 Si desea, también puedo orientarle sobre matrícula.");
-        addMessage("✨ Bendiciones. Quedamos a su disposición.");
-        return;
-      }
-      if (lower.includes("mensual") || lower.includes("pago") || lower.includes("cuota")){
-        addMessage(FAQ.mensualidad);
-        addMessage("✨ Bendiciones. Quedamos a su disposición.");
-        return;
-      }
-      if (lower.includes("horario") || lower.includes("atienden") || lower.includes("hora")){
-        addMessage(FAQ.horario);
-        addMessage("✨ Bendiciones. Quedamos a su disposición.");
-        return;
-      }
-      if (lower.includes("uniforme")){
-        addMessage(FAQ.uniforme);
-        addMessage("✨ Bendiciones. Quedamos a su disposición.");
-        return;
-      }
-
-      // Si no sabe: manda a WhatsApp directo
-      addMessage("Para darle una respuesta correcta, por favor escríbanos por WhatsApp y con gusto le atendemos. ✅");
-      openWhatsApp("Hola, necesito ayuda. Pregunta: " + text);
+    // ====== Inicio del chat ======
+    function initWelcome(){
+      messages.innerHTML = "";
+      addMessage("👋 Bienvenido(a) al Colegio Integral Emanuel.");
+      addMessage("Soy EmaBot, su asistente virtual institucional.");
+      addMessage("⏰ Horario de atención: Lunes a Viernes, 7:00 a.m. a 3:00 p.m.");
+      addMessage("😊 ¿En qué más podemos ayudarle?");
     }
 
-    /*********************
-     * FORMULARIO DE CONTACTO (simple)
-     *********************/
-    function showContactForm(){
-      addMessage("📝 Formulario de contacto:");
-      addMessage("1) Escriba su nombre, 2) teléfono, 3) su consulta. Luego presione Enviar.");
-
-      // Plantilla rápida en el input
-      chatInput.value = "Nombre: \nTeléfono: \nConsulta: ";
-      chatInput.focus();
-    }
-
-    /*********************
-     * EVENTOS
-     *********************/
+    // ====== Mostrar/Ocultar ======
     chatBtn.addEventListener("click", () => {
-      openChat();
-
-      // En móvil, si quieres “saludo con voz” al abrir,
-      // primero el usuario tocó el botón, así que ya es válido.
-      // Solo se reproduce si la voz está activada:
-      if (voiceEnabled && !greetedOnce){
-        greetedOnce = true;
-        speak("Hola, soy EmaBot. Bienvenido al " + SCHOOL_NAME + ". ¿En qué más podemos ayudarle?");
+      const open = chatBox.style.display === "block";
+      chatBox.style.display = open ? "none" : "block";
+      if(!open){
+        initWelcome();
       }
     });
 
-    closeBtn.addEventListener("click", closeChat);
+    closeChat.addEventListener("click", () => chatBox.style.display = "none");
 
+    // ====== Enviar texto ======
+    function sendText(){
+      const text = userInput.value.trim();
+      if(!text) return;
+      addMessage(text, "user");
+      userInput.value = "";
+      botAnswer(text);
+    }
+
+    sendBtn.addEventListener("click", sendText);
+    userInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") sendText();
+    });
+
+    // ====== Opciones clic ======
+    options.forEach(opt => {
+      opt.addEventListener("click", () => {
+        const key = opt.dataset.key;
+
+        if(key === "direccion") botAnswer("direccion");
+        else if(key === "matricula") botAnswer("matricula");
+        else if(key === "mensualidad") botAnswer("mensualidad");
+        else if(key === "horario") botAnswer("horario");
+        else if(key === "ofrece") botAnswer("que ofrece");
+        else if(key === "whatsapp") botAnswer("whatsapp");
+        else if(key === "contacto") {
+          modal.style.display = "flex";
+        }
+      });
+    });
+
+    // ====== Voz (toggle) ======
     voiceBtn.addEventListener("click", () => {
       voiceEnabled = !voiceEnabled;
-      // cambia icono
       voiceBtn.textContent = voiceEnabled ? "🔊" : "🔇";
+      addMessage(voiceEnabled ? "Voz activada ✅" : "Voz desactivada ✅");
+    });
 
-      addMessage(voiceEnabled
-        ? "Voz activada ✅"
-        : "Voz desactivada ✅"
-      );
+    // ====== “Alexa” web: primer click para permitir audio ======
+    startVoiceBtn.addEventListener("click", () => {
+      voiceEnabled = true;
+      voiceBtn.textContent = "🔊";
+      addMessage("Voz activada ✅ (en teléfono, la voz requiere este primer toque).");
+      speak("Hola, soy EmaBot. Bienvenido al Colegio Integral Emanuel. ¿En qué más podemos ayudarle?");
+      startVoiceBtn.style.display = "none";
+    });
 
-      // Saludo con voz la primera vez que se activa
-      if (voiceEnabled && !greetedOnce){
-        greetedOnce = true;
-        speak("Hola, soy EmaBot. Bienvenido al " + SCHOOL_NAME + ". ¿En qué más podemos ayudarle?");
+    // ====== Modal formulario ======
+    function closeForm(){
+      modal.style.display = "none";
+      document.getElementById("c-name").value = "";
+      document.getElementById("c-phone").value = "";
+      document.getElementById("c-email").value = "";
+      document.getElementById("c-msg").value = "";
+    }
+    closeModal.addEventListener("click", closeForm);
+    btnCancel.addEventListener("click", closeForm);
+    modal.addEventListener("click", (e) => {
+      if(e.target === modal) closeForm();
+    });
+
+    btnSend.addEventListener("click", () => {
+      const name = document.getElementById("c-name").value.trim();
+      const phone = document.getElementById("c-phone").value.trim();
+      const email = document.getElementById("c-email").value.trim();
+      const msg = document.getElementById("c-msg").value.trim();
+
+      if(!name || !msg){
+        alert("Por favor, complete al menos Nombre y Mensaje.");
+        return;
       }
+
+      const text =
+`Formulario de contacto - Colegio Integral Emanuel
+Nombre: ${name}
+Teléfono: ${phone || "No proporcionado"}
+Correo: ${email || "No proporcionado"}
+Mensaje: ${msg}`;
+
+      closeForm();
+      addMessage("✅ Gracias. Enviaremos su mensaje por WhatsApp.");
+      openWhatsApp(text);
+      addMessage("✨ Bendiciones. Quedamos a su disposición.");
     });
 
-    continueBtn.addEventListener("click", () => {
-      handleOption(getSelectedOption());
-    });
+    // Pre-cargar voces (algunos navegadores las cargan async)
+    window.speechSynthesis.onvoiceschanged = () => {};
 
-    helpBtn.addEventListener("click", () => {
-      addMessage("😊 Puede seleccionar una opción y tocar “Continuar”, o escribir su pregunta abajo.");
-    });
-
-    sendBtn.addEventListener("click", () => {
-      handleTextQuestion(chatInput.value);
-      chatInput.value = "";
-    });
-
-    chatInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter"){
-        e.preventDefault();
-        sendBtn.click();
-      }
-    });
-
-    // Si el usuario selecciona un radio, opcionalmente auto-responder (si lo quieres)
-    // descomenta para que responda sin “Continuar”
-    /*
-    document.getElementById("radio-list").addEventListener("change", () => {
-      handleOption(getSelectedOption());
-    });
-    */
   </script>
+
 </body>
 </html>
