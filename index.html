@@ -26,7 +26,7 @@
       color: var(--text);
     }
 
-    /* Widget flotante */
+    /* Botón flotante */
     .fab{
       position: fixed;
       right: 18px;
@@ -43,6 +43,7 @@
       align-items:center;
       justify-content:center;
       font-size: 22px;
+      z-index: 9999;
     }
 
     .chat{
@@ -58,6 +59,7 @@
       overflow: hidden;
       display:none;
       border:1px solid var(--line);
+      z-index: 9999;
     }
     .chat.open{display:block}
 
@@ -149,11 +151,6 @@
       background: #eaf1ff;
       border-color: #d5e2ff;
       border-top-right-radius: 8px;
-    }
-    .meta{
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
     }
 
     .panel{
@@ -254,7 +251,6 @@
     a{color: var(--primary); text-decoration: none}
     a:hover{text-decoration: underline}
 
-    /* Responsive */
     @media (max-height: 560px){
       .chat{height: 78vh}
     }
@@ -262,10 +258,8 @@
 </head>
 <body>
 
-  <!-- Botón flotante -->
   <button class="fab" id="fab" aria-label="Abrir chat">💬</button>
 
-  <!-- Ventana del chat -->
   <section class="chat" id="chat" aria-label="EmaBot">
     <header class="chat__header">
       <div class="brand">
@@ -291,7 +285,7 @@
 
   <script>
     /***********************
-     * CONFIGURACIÓN RÁPIDA
+     * CONFIGURACIÓN
      ***********************/
     const SCHOOL = {
       name: "Colegio Integral Emanuel",
@@ -304,9 +298,6 @@
       maps: "https://www.google.com/maps/search/?api=1&query=Colegio+Integral+Emanuel+Matagalpa"
     };
 
-    /***********************
-     * UTILIDADES
-     ***********************/
     const $ = (id) => document.getElementById(id);
     const chat = $("chat");
     const body = $("body");
@@ -324,19 +315,6 @@
       }[m]));
     }
 
-    function addBubble(text, who="bot"){
-      const div = document.createElement("div");
-      div.className = `bubble ${who}`;
-      div.innerHTML = text; // text ya debe venir seguro si incluye HTML
-      body.appendChild(div);
-      body.scrollTop = body.scrollHeight;
-
-      // Lectura por voz solo para bot
-      if(who === "bot" && speakEnabled){
-        speak(stripHtml(text));
-      }
-    }
-
     function stripHtml(html){
       const tmp = document.createElement("div");
       tmp.innerHTML = html;
@@ -352,6 +330,18 @@
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(u);
       }catch(e){}
+    }
+
+    function addBubble(text, who="bot"){
+      const div = document.createElement("div");
+      div.className = `bubble ${who}`;
+      div.innerHTML = text;
+      body.appendChild(div);
+      body.scrollTop = body.scrollHeight;
+
+      if(who === "bot" && speakEnabled){
+        speak(stripHtml(text));
+      }
     }
 
     function addPanel(){
@@ -383,7 +373,6 @@
         btn.addEventListener("click", ()=> handleAction(btn.dataset.action));
       });
 
-      // Dictado por voz (SpeechRecognition)
       const listenBtn = panel.querySelector("#listenBtn");
       const stopVoice = panel.querySelector("#stopVoice");
 
@@ -431,9 +420,6 @@
       };
     }
 
-    /***********************
-     * RESPUESTAS
-     ***********************/
     function rMatricula(){
       return `
         <b>📝 Información de Matrícula</b><br><br>
@@ -521,15 +507,12 @@
       return null;
     }
 
-    /***********************
-     * EVENTOS
-     ***********************/
     function openChat(){
       chat.classList.add("open");
       fab.style.display = "none";
       input.focus();
+
       if(body.childElementCount === 0){
-        // Mensaje inicial
         addBubble(
           `<b>👋 Bienvenido(a) al asistente virtual del ${escapeHtml(SCHOOL.name)}.</b><br><br>
            Estoy aquí para brindarle información clara y oportuna sobre nuestros servicios educativos.<br><br>
@@ -574,8 +557,18 @@
       if(e.key === "Enter") send();
     });
 
-    // Abre automáticamente si quieres (opcional):
-    // openChat();
+    /***************************************
+     * ✅ CAMBIO: ABRIR AUTOMÁTICO AL ENTRAR
+     * (solo la primera vez – más profesional)
+     ***************************************/
+    window.addEventListener("load", () => {
+      const alreadyOpened = localStorage.getItem("emabot_opened_once");
+      if (!alreadyOpened) {
+        setTimeout(openChat, 800);
+        localStorage.setItem("emabot_opened_once", "1");
+      }
+    });
   </script>
 </body>
 </html>
+
