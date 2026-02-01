@@ -1,255 +1,298 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>EmaBot – Asistente Virtual</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EmaBot – Asistente Virtual</title>
 
-  <style>
-    :root{
-      --primary:#1e5bd8;
-      --primary-2:#0f3aa6;
-      --bg:#f4f7ff;
-      --card:#ffffff;
-      --text:#1b1f2a;
-      --muted:#5d6b86;
-      --line:#e6eaf3;
-      --radius:16px;
-      --shadow:0 12px 30px rgba(16,40,120,.14);
-    }
+<style>
+:root{
+  --primary:#1e5bd8;
+  --primary2:#0f3aa6;
+  --bg:#f4f7ff;
+  --card:#ffffff;
+  --line:#e6eaf3;
+  --text:#1b1f2a;
+  --radius:16px;
+  --shadow:0 12px 30px rgba(16,40,120,.14);
+}
 
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:transparent;
-      color:var(--text);
-    }
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+}
 
-    /* Botón flotante */
-    .fab{
-      position:fixed;
-      right:18px;
-      bottom:18px;
-      width:56px;height:56px;
-      border-radius:999px;
-      border:none;
-      background:var(--primary);
-      color:#fff;
-      cursor:pointer;
-      box-shadow:var(--shadow);
-      display:flex;align-items:center;justify-content:center;
-      font-size:22px;
-      z-index:9999;
-    }
+/* Botón flotante */
+#fab{
+  position:fixed;
+  right:18px;bottom:18px;
+  width:56px;height:56px;
+  border-radius:50%;
+  border:none;
+  background:var(--primary);
+  color:#fff;
+  font-size:22px;
+  cursor:pointer;
+  box-shadow:var(--shadow);
+  z-index:9999;
+}
 
-    /* Ventana */
-    .chat{
-      position:fixed;
-      right:18px;
-      bottom:86px;
-      width:min(380px,calc(100vw - 36px));
-      height:72vh;max-height:640px;
-      background:var(--card);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      border:1px solid var(--line);
-      display:none;
-      overflow:hidden;
-      z-index:9999;
-    }
-    .chat.open{display:block}
+/* Chat */
+#chat{
+  position:fixed;
+  right:18px;bottom:86px;
+  width:min(380px,calc(100vw - 36px));
+  height:72vh;max-height:640px;
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  border:1px solid var(--line);
+  display:none;
+  overflow:hidden;
+  z-index:9999;
+}
+#chat.open{display:block}
 
-    .chat__header{
-      background:linear-gradient(135deg,var(--primary),var(--primary-2));
-      color:#fff;
-      padding:12px 14px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-    }
-    .brand{display:flex;align-items:center;gap:10px}
-    .boticon{
-      width:34px;height:34px;border-radius:10px;
-      background:rgba(255,255,255,.16);
-      display:flex;align-items:center;justify-content:center;
-    }
-    .brand__title{font-weight:700;font-size:14px}
-    .brand__sub{font-size:12px;opacity:.9}
+header{
+  background:linear-gradient(135deg,var(--primary),var(--primary2));
+  color:#fff;
+  padding:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+header .title{
+  font-weight:700;
+  font-size:14px;
+}
+header .sub{
+  font-size:12px;
+  opacity:.9;
+}
+header button{
+  background:rgba(255,255,255,.2);
+  border:none;
+  color:#fff;
+  border-radius:8px;
+  width:34px;height:34px;
+  cursor:pointer;
+}
 
-    .iconbtn{
-      border:none;background:rgba(255,255,255,.18);color:#fff;
-      width:34px;height:34px;border-radius:10px;
-      cursor:pointer;
-    }
+#body{
+  background:var(--bg);
+  padding:14px;
+  height:calc(100% - 56px - 64px);
+  overflow:auto;
+}
 
-    .chat__body{
-      background:var(--bg);
-      padding:14px;
-      height:calc(100% - 56px - 64px);
-      overflow:auto;
-    }
+.bubble{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px 12px;
+  margin:8px 0;
+  max-width:92%;
+  box-shadow:0 6px 14px rgba(0,0,0,.06);
+  font-size:14px;
+  line-height:1.35;
+}
+.user{
+  margin-left:auto;
+  background:#eaf1ff;
+}
 
-    .bubble{
-      max-width:92%;
-      padding:10px 12px;
-      border-radius:14px;
-      margin:8px 0;
-      border:1px solid var(--line);
-      background:#fff;
-      box-shadow:0 6px 14px rgba(0,0,0,.06);
-      font-size:14px;line-height:1.35;
-    }
-    .bubble.user{
-      margin-left:auto;
-      background:#eaf1ff;
-      border-color:#d5e2ff;
-    }
+.panel{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+  margin:12px 0;
+}
+.panel button{
+  width:100%;
+  margin:4px 0;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:#fff;
+  cursor:pointer;
+  font-weight:600;
+}
 
-    .panel{
-      background:#fff;border:1px solid var(--line);
-      border-radius:14px;padding:12px;margin:12px 0;
-    }
-    .panel__title{font-weight:700;font-size:13px;margin-bottom:8px}
-
-    .btns{
-      display:grid;grid-template-columns:1fr 1fr;gap:10px;
-    }
-    .btn{
-      border:1px solid #d6def1;background:#fff;border-radius:12px;
-      padding:10px;cursor:pointer;font-weight:600;font-size:13px;
-      display:flex;align-items:center;gap:8px;
-    }
-    .btn.full{grid-column:1 / -1}
-
-    .chat__footer{
-      border-top:1px solid var(--line);
-      background:#fff;
-      padding:10px;display:flex;gap:10px;align-items:center;height:64px;
-    }
-    .input{
-      flex:1;border:1px solid #d6def1;border-radius:12px;
-      padding:11px 12px;font-size:14px;
-    }
-    .send{
-      border:none;background:var(--primary);color:#fff;
-      border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer;
-    }
-  </style>
+footer{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  border-top:1px solid var(--line);
+}
+footer input{
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--line);
+}
+footer button{
+  padding:10px 14px;
+  border-radius:10px;
+  border:none;
+  background:var(--primary);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+</style>
 </head>
 
 <body>
 
-<button class="fab" id="fab">💬</button>
+<button id="fab">💬</button>
 
-<section class="chat" id="chat">
-  <header class="chat__header">
-    <div class="brand">
-      <div class="boticon">🤖</div>
-      <div>
-        <div class="brand__title">EmaBot – Asistente Virtual</div>
-        <div class="brand__sub">Colegio Integral Emanuel</div>
-      </div>
-    </div>
-    <button class="iconbtn" id="close">✕</button>
-  </header>
+<section id="chat">
+<header>
+  <div>
+    <div class="title">EmaBot – Asistente Virtual</div>
+    <div class="sub">Colegio Integral Emanuel</div>
+  </div>
+  <div>
+    <button id="voiceBtn">🎙️</button>
+    <button id="stopBtn">⏹️</button>
+    <button id="closeBtn">✕</button>
+  </div>
+</header>
 
-  <main class="chat__body" id="body"></main>
+<div id="body"></div>
 
-  <footer class="chat__footer">
-    <input class="input" id="input" placeholder="Escriba su consulta aquí..." />
-    <button class="send" id="send">Enviar</button>
-  </footer>
+<footer>
+  <input id="input" placeholder="Escriba su consulta aquí…">
+  <button id="sendBtn">Enviar</button>
+</footer>
 </section>
 
 <script>
-  const SCHOOL = {
-    name:"Colegio Integral Emanuel",
-    city:"Matagalpa, Nicaragua",
-    phone:"8853-3012",
-    email:"colegiointegralemanuel@gmail.com",
-    hours:"Lunes a Viernes | 7:00 a.m. – 3:00 p.m.",
-    maps:"https://www.google.com/maps/search/?api=1&query=Colegio+Integral+Emanuel+Matagalpa"
-  };
+/* ===== DATOS DEL COLEGIO ===== */
+const SCHOOL={
+  name:"Colegio Integral Emanuel",
+  phone:"8853-3012",
+  email:"colegiointegralemanuel@gmail.com",
+  hours:"Lunes a Viernes | 7:00 a.m. – 3:00 p.m.",
+  city:"Matagalpa, Nicaragua",
+  maps:"https://www.google.com/maps/search/?api=1&query=Colegio+Integral+Emanuel+Matagalpa"
+};
 
-  const chat = document.getElementById("chat");
-  const body = document.getElementById("body");
-  const input = document.getElementById("input");
-  const fab = document.getElementById("fab");
+const chat=document.getElementById("chat");
+const body=document.getElementById("body");
+const fab=document.getElementById("fab");
+const closeBtn=document.getElementById("closeBtn");
+const input=document.getElementById("input");
+const sendBtn=document.getElementById("sendBtn");
+const voiceBtn=document.getElementById("voiceBtn");
+const stopBtn=document.getElementById("stopBtn");
 
-  function addBubble(text, user=false){
-    const b=document.createElement("div");
-    b.className="bubble"+(user?" user":"");
-    b.innerHTML=text;
-    body.appendChild(b);
-    body.scrollTop=body.scrollHeight;
+let voiceEnabled=false;
+
+/* ===== VOZ ===== */
+function speak(text){
+  if(!voiceEnabled) return;
+  if(!("speechSynthesis" in window)) return;
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang="es-ES";
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+
+/* ===== UTILIDADES ===== */
+function addBubble(text,user=false){
+  const b=document.createElement("div");
+  b.className="bubble"+(user?" user":"");
+  b.innerHTML=text;
+  body.appendChild(b);
+  body.scrollTop=body.scrollHeight;
+  if(!user) speak(b.innerText);
+}
+
+/* ===== INICIO ===== */
+function openChat(){
+  chat.classList.add("open");
+  fab.style.display="none";
+  if(body.childElementCount===0){
+    addBubble(
+      `<b>👋 Bienvenido(a) al asistente virtual del ${SCHOOL.name}.</b><br><br>
+       ⏰ <b>Horario de atención:</b><br>${SCHOOL.hours}<br><br>
+       Seleccione una opción o escriba su consulta.`
+    );
+    showMenu();
   }
+}
+function closeChat(){
+  chat.classList.remove("open");
+  fab.style.display="block";
+  window.speechSynthesis.cancel();
+}
 
-  function openChat(){
-    chat.classList.add("open");
-    fab.style.display="none";
-    if(body.childElementCount===0){
-      addBubble(
-        `<b>👋 Bienvenido(a) al asistente virtual del ${SCHOOL.name}.</b><br><br>
-         Estoy aquí para brindarle información clara y oportuna.<br><br>
-         <b>⏰ Horario:</b> ${SCHOOL.hours}`
-      );
-      addPanel();
-    }
+/* ===== MENÚ ===== */
+function showMenu(){
+  const p=document.createElement("div");
+  p.className="panel";
+  p.innerHTML=`
+    <button onclick="reply('matricula')">📝 Matrícula</button>
+    <button onclick="reply('horarios')">⏰ Horarios</button>
+    <button onclick="reply('ubicacion')">📍 Ubicación</button>
+    <button onclick="reply('ofertas')">📚 Ofertas Académicas</button>
+    <button onclick="reply('contacto')">📞 Contacto</button>
+    <div style="font-size:12px;margin-top:8px">🎧 Presione 🎙️ para activar voz</div>
+  `;
+  body.appendChild(p);
+}
+
+/* ===== RESPUESTAS ===== */
+window.reply=function(type){
+  if(type==="matricula"){
+    addBubble(`📝 Para matrícula comuníquese al <b>${SCHOOL.phone}</b>.`);
   }
-
-  function closeChat(){
-    chat.classList.remove("open");
-    fab.style.display="flex";
+  if(type==="horarios"){
+    addBubble(`⏰ Atención administrativa:<br>${SCHOOL.hours}`);
   }
-
-  function addPanel(){
-    const p=document.createElement("div");
-    p.className="panel";
-    p.innerHTML=`
-      <div class="panel__title">Seleccione una opción</div>
-      <div class="btns">
-        <button class="btn" onclick="reply('matricula')">📝 Matrícula</button>
-        <button class="btn" onclick="reply('horarios')">⏰ Horarios</button>
-        <button class="btn" onclick="reply('ubicacion')">📍 Ubicación</button>
-        <button class="btn" onclick="reply('ofertas')">📚 Ofertas</button>
-        <button class="btn full" onclick="reply('contacto')">📞 Contacto</button>
-      </div>`;
-    body.appendChild(p);
+  if(type==="ubicacion"){
+    addBubble(`📍 ${SCHOOL.city}<br><a href="${SCHOOL.maps}" target="_blank">Ver en Google Maps</a>`);
   }
-
-  function reply(type){
-    if(type==="matricula"){
-      addBubble("📝 Para matrícula comuníquese al <b>"+SCHOOL.phone+"</b>.");
-    }
-    if(type==="horarios"){
-      addBubble("⏰ Horario de atención:<br>"+SCHOOL.hours);
-    }
-    if(type==="ubicacion"){
-      addBubble("📍 Nos ubicamos en "+SCHOOL.city+
-        `<br><a href="${SCHOOL.maps}" target="_blank">Ver en Google Maps</a>`);
-    }
-    if(type==="ofertas"){
-      addBubble("📚 Ofrecemos Preescolar, Primaria, Inglés y Tecnología Educativa.");
-    }
-    if(type==="contacto"){
-      addBubble("📞 Tel: "+SCHOOL.phone+"<br>📧 "+SCHOOL.email);
-    }
+  if(type==="ofertas"){
+    addBubble(`📚 Preescolar, Primaria, Inglés diario y Tecnología Educativa.`);
   }
+  if(type==="contacto"){
+    addBubble(`📞 ${SCHOOL.phone}<br>📧 ${SCHOOL.email}`);
+  }
+};
 
-  document.getElementById("send").onclick=()=>{
-    if(input.value.trim()){
-      addBubble(input.value,true);
-      input.value="";
-      addBubble("Gracias por su mensaje. Un momento por favor.");
-    }
-  };
+/* ===== EVENTOS ===== */
+fab.onclick=openChat;
+closeBtn.onclick=closeChat;
 
-  document.getElementById("close").onclick=closeChat;
-  fab.onclick=openChat;
+sendBtn.onclick=()=>{
+  if(input.value.trim()){
+    addBubble(input.value,true);
+    input.value="";
+    addBubble("Gracias por su mensaje. En breve le atendemos.");
+  }
+};
 
-  /* ✅ APERTURA AUTOMÁTICA AL ENTRAR */
-  window.addEventListener("load",()=>{
-    setTimeout(openChat,600);
-  });
+voiceBtn.onclick=()=>{
+  voiceEnabled=true;
+  localStorage.setItem("emabot_voice","1");
+  speak("La voz ha sido activada. Bienvenido al Colegio Integral Emanuel.");
+};
+
+stopBtn.onclick=()=>window.speechSynthesis.cancel();
+
+/* ===== RECORDAR VOZ ===== */
+if(localStorage.getItem("emabot_voice")==="1"){
+  voiceEnabled=true;
+}
+
+/* ===== ABRIR AUTOMÁTICO ===== */
+window.addEventListener("load",()=>{
+  setTimeout(openChat,600);
+});
 </script>
 
 </body>
