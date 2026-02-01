@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>EmaBot – Asistente Virtual</title>
+
   <style>
     :root{
       --primary:#1e5bd8;
@@ -13,562 +14,243 @@
       --text:#1b1f2a;
       --muted:#5d6b86;
       --line:#e6eaf3;
-      --accent:#ffb020;
       --radius:16px;
-      --shadow:0 12px 30px rgba(16, 40, 120, .14);
+      --shadow:0 12px 30px rgba(16,40,120,.14);
     }
 
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: transparent;
-      color: var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:transparent;
+      color:var(--text);
     }
 
     /* Botón flotante */
     .fab{
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      width: 56px;
-      height: 56px;
-      border-radius: 999px;
-      border: none;
-      background: var(--primary);
-      color: #fff;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: 22px;
-      z-index: 9999;
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      width:56px;height:56px;
+      border-radius:999px;
+      border:none;
+      background:var(--primary);
+      color:#fff;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+      display:flex;align-items:center;justify-content:center;
+      font-size:22px;
+      z-index:9999;
     }
 
+    /* Ventana */
     .chat{
-      position: fixed;
-      right: 18px;
-      bottom: 86px;
-      width: min(380px, calc(100vw - 36px));
-      height: 72vh;
-      max-height: 640px;
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      display:none;
+      position:fixed;
+      right:18px;
+      bottom:86px;
+      width:min(380px,calc(100vw - 36px));
+      height:72vh;max-height:640px;
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
       border:1px solid var(--line);
-      z-index: 9999;
+      display:none;
+      overflow:hidden;
+      z-index:9999;
     }
     .chat.open{display:block}
 
     .chat__header{
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
-      color: #fff;
-      padding: 12px 14px;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
-    .boticon{
-      width:34px;
-      height:34px;
-      border-radius: 10px;
-      background: rgba(255,255,255,.16);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: 18px;
-      flex:0 0 auto;
-    }
-    .brand__text{
-      min-width:0;
-      line-height:1.15;
-    }
-    .brand__title{
-      font-weight: 700;
-      font-size: 14px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .brand__sub{
-      font-size: 12px;
-      opacity: .9;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .header__actions{
-      display:flex;
-      gap: 8px;
-      align-items:center;
-    }
-    .iconbtn{
-      border:none;
-      background: rgba(255,255,255,.18);
+      background:linear-gradient(135deg,var(--primary),var(--primary-2));
       color:#fff;
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: 16px;
+      padding:12px 14px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
     }
-    .iconbtn:hover{background: rgba(255,255,255,.26)}
+    .brand{display:flex;align-items:center;gap:10px}
+    .boticon{
+      width:34px;height:34px;border-radius:10px;
+      background:rgba(255,255,255,.16);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .brand__title{font-weight:700;font-size:14px}
+    .brand__sub{font-size:12px;opacity:.9}
+
+    .iconbtn{
+      border:none;background:rgba(255,255,255,.18);color:#fff;
+      width:34px;height:34px;border-radius:10px;
+      cursor:pointer;
+    }
 
     .chat__body{
-      background: var(--bg);
-      padding: 14px;
-      height: calc(100% - 56px - 64px);
+      background:var(--bg);
+      padding:14px;
+      height:calc(100% - 56px - 64px);
       overflow:auto;
     }
 
     .bubble{
-      max-width: 92%;
-      padding: 10px 12px;
-      border-radius: 14px;
-      margin: 8px 0;
-      border: 1px solid var(--line);
+      max-width:92%;
+      padding:10px 12px;
+      border-radius:14px;
+      margin:8px 0;
+      border:1px solid var(--line);
       background:#fff;
-      box-shadow: 0 6px 14px rgba(0,0,0,.06);
-      font-size: 14px;
-      line-height: 1.35;
+      box-shadow:0 6px 14px rgba(0,0,0,.06);
+      font-size:14px;line-height:1.35;
     }
-    .bubble.bot{border-top-left-radius: 8px}
     .bubble.user{
       margin-left:auto;
-      background: #eaf1ff;
-      border-color: #d5e2ff;
-      border-top-right-radius: 8px;
+      background:#eaf1ff;
+      border-color:#d5e2ff;
     }
 
     .panel{
-      background:#fff;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-      margin: 12px 0;
+      background:#fff;border:1px solid var(--line);
+      border-radius:14px;padding:12px;margin:12px 0;
     }
-    .panel__title{
-      font-weight: 700;
-      margin: 0 0 8px;
-      font-size: 13px;
-      color: var(--text);
-    }
+    .panel__title{font-weight:700;font-size:13px;margin-bottom:8px}
 
     .btns{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;
     }
     .btn{
-      border:1px solid #d6def1;
-      background:#fff;
-      border-radius: 12px;
-      padding: 10px 10px;
-      cursor:pointer;
-      font-weight: 600;
-      font-size: 13px;
-      color: var(--text);
-      display:flex;
-      align-items:center;
-      gap:8px;
-      justify-content:flex-start;
+      border:1px solid #d6def1;background:#fff;border-radius:12px;
+      padding:10px;cursor:pointer;font-weight:600;font-size:13px;
+      display:flex;align-items:center;gap:8px;
     }
-    .btn:hover{background:#f6f9ff}
-    .btn.full{grid-column: 1 / -1}
-
-    .voicebar{
-      display:flex;
-      gap:10px;
-      margin-top: 10px;
-    }
-    .voicebtn{
-      flex: 1;
-      border:none;
-      border-radius: 12px;
-      padding: 10px 12px;
-      cursor:pointer;
-      font-weight: 700;
-      background: var(--primary);
-      color:#fff;
-    }
-    .voicebtn.secondary{
-      background:#fff;
-      color: var(--primary);
-      border:1px solid #cfe0ff;
-    }
-    .voicebtn:disabled{
-      opacity:.55;
-      cursor:not-allowed;
-    }
+    .btn.full{grid-column:1 / -1}
 
     .chat__footer{
       border-top:1px solid var(--line);
       background:#fff;
-      padding: 10px;
-      display:flex;
-      gap: 10px;
-      align-items:center;
-      height: 64px;
+      padding:10px;display:flex;gap:10px;align-items:center;height:64px;
     }
     .input{
-      flex:1;
-      border:1px solid #d6def1;
-      border-radius: 12px;
-      padding: 11px 12px;
-      outline:none;
-      font-size: 14px;
+      flex:1;border:1px solid #d6def1;border-radius:12px;
+      padding:11px 12px;font-size:14px;
     }
     .send{
-      border:none;
-      background: var(--primary);
-      color:#fff;
-      border-radius: 12px;
-      padding: 11px 14px;
-      cursor:pointer;
-      font-weight: 700;
-    }
-    .send:hover{background: var(--primary-2)}
-
-    .small{
-      font-size:12px;
-      color: var(--muted);
-    }
-
-    a{color: var(--primary); text-decoration: none}
-    a:hover{text-decoration: underline}
-
-    @media (max-height: 560px){
-      .chat{height: 78vh}
+      border:none;background:var(--primary);color:#fff;
+      border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer;
     }
   </style>
 </head>
+
 <body>
 
-  <button class="fab" id="fab" aria-label="Abrir chat">💬</button>
+<button class="fab" id="fab">💬</button>
 
-  <section class="chat" id="chat" aria-label="EmaBot">
-    <header class="chat__header">
-      <div class="brand">
-        <div class="boticon">🤖</div>
-        <div class="brand__text">
-          <div class="brand__title">EmaBot – Asistente Virtual</div>
-          <div class="brand__sub">Colegio Integral Emanuel</div>
-        </div>
+<section class="chat" id="chat">
+  <header class="chat__header">
+    <div class="brand">
+      <div class="boticon">🤖</div>
+      <div>
+        <div class="brand__title">EmaBot – Asistente Virtual</div>
+        <div class="brand__sub">Colegio Integral Emanuel</div>
       </div>
-      <div class="header__actions">
-        <button class="iconbtn" id="toggleSound" title="Activar/desactivar lectura por voz">🔊</button>
-        <button class="iconbtn" id="close" title="Cerrar">✕</button>
-      </div>
-    </header>
+    </div>
+    <button class="iconbtn" id="close">✕</button>
+  </header>
 
-    <main class="chat__body" id="body"></main>
+  <main class="chat__body" id="body"></main>
 
-    <footer class="chat__footer">
-      <input class="input" id="input" placeholder="Escriba su consulta aquí..." />
-      <button class="send" id="send">Enviar</button>
-    </footer>
-  </section>
+  <footer class="chat__footer">
+    <input class="input" id="input" placeholder="Escriba su consulta aquí..." />
+    <button class="send" id="send">Enviar</button>
+  </footer>
+</section>
 
-  <script>
-    /***********************
-     * CONFIGURACIÓN
-     ***********************/
-    const SCHOOL = {
-      name: "Colegio Integral Emanuel",
-      city: "Matagalpa, Nicaragua",
-      phone: "8853-3012",
-      whatsapp: "50588533012", // +505 sin signos ni espacios
-      email: "colegiointegralemanuel@gmail.com",
-      hours: "Lunes a Viernes | 7:00 a.m. a 3:00 p.m.",
-      website: "https://ceciliamorraz-sys.github.io/chatbot-colegio-emanuel-/",
-      maps: "https://www.google.com/maps/search/?api=1&query=Colegio+Integral+Emanuel+Matagalpa"
-    };
+<script>
+  const SCHOOL = {
+    name:"Colegio Integral Emanuel",
+    city:"Matagalpa, Nicaragua",
+    phone:"8853-3012",
+    email:"colegiointegralemanuel@gmail.com",
+    hours:"Lunes a Viernes | 7:00 a.m. – 3:00 p.m.",
+    maps:"https://www.google.com/maps/search/?api=1&query=Colegio+Integral+Emanuel+Matagalpa"
+  };
 
-    const $ = (id) => document.getElementById(id);
-    const chat = $("chat");
-    const body = $("body");
-    const input = $("input");
-    const fab = $("fab");
-    const closeBtn = $("close");
-    const sendBtn = $("send");
-    const toggleSoundBtn = $("toggleSound");
+  const chat = document.getElementById("chat");
+  const body = document.getElementById("body");
+  const input = document.getElementById("input");
+  const fab = document.getElementById("fab");
 
-    let speakEnabled = true;
+  function addBubble(text, user=false){
+    const b=document.createElement("div");
+    b.className="bubble"+(user?" user":"");
+    b.innerHTML=text;
+    body.appendChild(b);
+    body.scrollTop=body.scrollHeight;
+  }
 
-    function escapeHtml(str){
-      return str.replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-      }[m]));
+  function openChat(){
+    chat.classList.add("open");
+    fab.style.display="none";
+    if(body.childElementCount===0){
+      addBubble(
+        `<b>👋 Bienvenido(a) al asistente virtual del ${SCHOOL.name}.</b><br><br>
+         Estoy aquí para brindarle información clara y oportuna.<br><br>
+         <b>⏰ Horario:</b> ${SCHOOL.hours}`
+      );
+      addPanel();
     }
+  }
 
-    function stripHtml(html){
-      const tmp = document.createElement("div");
-      tmp.innerHTML = html;
-      return (tmp.textContent || tmp.innerText || "").trim();
+  function closeChat(){
+    chat.classList.remove("open");
+    fab.style.display="flex";
+  }
+
+  function addPanel(){
+    const p=document.createElement("div");
+    p.className="panel";
+    p.innerHTML=`
+      <div class="panel__title">Seleccione una opción</div>
+      <div class="btns">
+        <button class="btn" onclick="reply('matricula')">📝 Matrícula</button>
+        <button class="btn" onclick="reply('horarios')">⏰ Horarios</button>
+        <button class="btn" onclick="reply('ubicacion')">📍 Ubicación</button>
+        <button class="btn" onclick="reply('ofertas')">📚 Ofertas</button>
+        <button class="btn full" onclick="reply('contacto')">📞 Contacto</button>
+      </div>`;
+    body.appendChild(p);
+  }
+
+  function reply(type){
+    if(type==="matricula"){
+      addBubble("📝 Para matrícula comuníquese al <b>"+SCHOOL.phone+"</b>.");
     }
-
-    function speak(text){
-      try{
-        if(!("speechSynthesis" in window)) return;
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = "es-ES";
-        u.rate = 1;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(u);
-      }catch(e){}
+    if(type==="horarios"){
+      addBubble("⏰ Horario de atención:<br>"+SCHOOL.hours);
     }
-
-    function addBubble(text, who="bot"){
-      const div = document.createElement("div");
-      div.className = `bubble ${who}`;
-      div.innerHTML = text;
-      body.appendChild(div);
-      body.scrollTop = body.scrollHeight;
-
-      if(who === "bot" && speakEnabled){
-        speak(stripHtml(text));
-      }
+    if(type==="ubicacion"){
+      addBubble("📍 Nos ubicamos en "+SCHOOL.city+
+        `<br><a href="${SCHOOL.maps}" target="_blank">Ver en Google Maps</a>`);
     }
-
-    function addPanel(){
-      const panel = document.createElement("div");
-      panel.className = "panel";
-      panel.innerHTML = `
-        <div class="panel__title">Seleccione una opción o escriba su consulta</div>
-        <div class="btns">
-          <button class="btn" data-action="matricula">📝 Matrícula</button>
-          <button class="btn" data-action="horarios">⏰ Horarios</button>
-          <button class="btn" data-action="ubicacion">📍 Ubicación</button>
-          <button class="btn" data-action="ofertas">📚 Ofertas</button>
-          <button class="btn full" data-action="contacto">📞 Contacto / WhatsApp</button>
-        </div>
-
-        <div class="voicebar">
-          <button class="voicebtn secondary" id="listenBtn">🎙️ Dictar pregunta</button>
-          <button class="voicebtn" id="stopVoice">⏹ Detener voz</button>
-        </div>
-
-        <div class="small" style="margin-top:10px;">
-          <b>Horario de atención administrativa:</b> ${escapeHtml(SCHOOL.hours)}
-        </div>
-      `;
-      body.appendChild(panel);
-      body.scrollTop = body.scrollHeight;
-
-      panel.querySelectorAll("button[data-action]").forEach(btn=>{
-        btn.addEventListener("click", ()=> handleAction(btn.dataset.action));
-      });
-
-      const listenBtn = panel.querySelector("#listenBtn");
-      const stopVoice = panel.querySelector("#stopVoice");
-
-      stopVoice.addEventListener("click", ()=> {
-        if("speechSynthesis" in window) window.speechSynthesis.cancel();
-      });
-
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if(!SpeechRecognition){
-        listenBtn.disabled = true;
-        listenBtn.textContent = "🎙️ Dictado no disponible";
-        return;
-      }
-
-      const rec = new SpeechRecognition();
-      rec.lang = "es-ES";
-      rec.interimResults = false;
-      rec.maxAlternatives = 1;
-
-      listenBtn.addEventListener("click", ()=>{
-        try{
-          rec.start();
-          listenBtn.textContent = "🎙️ Escuchando...";
-          listenBtn.disabled = true;
-        }catch(e){
-          listenBtn.disabled = false;
-          listenBtn.textContent = "🎙️ Dictar pregunta";
-        }
-      });
-
-      rec.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        input.value = transcript;
-        listenBtn.disabled = false;
-        listenBtn.textContent = "🎙️ Dictar pregunta";
-        input.focus();
-      };
-      rec.onerror = () => {
-        listenBtn.disabled = false;
-        listenBtn.textContent = "🎙️ Dictar pregunta";
-      };
-      rec.onend = () => {
-        listenBtn.disabled = false;
-        listenBtn.textContent = "🎙️ Dictar pregunta";
-      };
+    if(type==="ofertas"){
+      addBubble("📚 Ofrecemos Preescolar, Primaria, Inglés y Tecnología Educativa.");
     }
-
-    function rMatricula(){
-      return `
-        <b>📝 Información de Matrícula</b><br><br>
-        Para información sobre el proceso de matrícula, requisitos y fechas disponibles, puede comunicarse con la administración del colegio.<br><br>
-        <b>📞 Teléfono/WhatsApp:</b> ${escapeHtml(SCHOOL.phone)}<br>
-        <b>⏰ Atención:</b> ${escapeHtml(SCHOOL.hours)}<br><br>
-        <a href="https://wa.me/${encodeURIComponent(SCHOOL.whatsapp)}" target="_blank" rel="noopener">Abrir WhatsApp</a>
-      `;
+    if(type==="contacto"){
+      addBubble("📞 Tel: "+SCHOOL.phone+"<br>📧 "+SCHOOL.email);
     }
+  }
 
-    function rHorarios(){
-      return `
-        <b>⏰ Horarios de Atención</b><br><br>
-        <b>Atención administrativa:</b><br>
-        ${escapeHtml(SCHOOL.hours)}
-      `;
+  document.getElementById("send").onclick=()=>{
+    if(input.value.trim()){
+      addBubble(input.value,true);
+      input.value="";
+      addBubble("Gracias por su mensaje. Un momento por favor.");
     }
+  };
 
-    function rUbicacion(){
-      return `
-        <b>📍 Ubicación del Colegio</b><br><br>
-        ${escapeHtml(SCHOOL.name)} – ${escapeHtml(SCHOOL.city)}<br><br>
-        <a href="${escapeHtml(SCHOOL.maps)}" target="_blank" rel="noopener">Ver en Google Maps</a>
-      `;
-    }
+  document.getElementById("close").onclick=closeChat;
+  fab.onclick=openChat;
 
-    function rOfertas(){
-      return `
-        <b>📚 Ofertas Académicas</b><br><br>
-        Brindamos una educación integral basada en valores cristianos, que incluye:<br>
-        ✔ Preescolar<br>
-        ✔ Primaria<br>
-        ✔ Inglés diario<br>
-        ✔ Tecnología educativa<br>
-        ✔ Atención psicopedagógica
-      `;
-    }
+  /* ✅ APERTURA AUTOMÁTICA AL ENTRAR */
+  window.addEventListener("load",()=>{
+    setTimeout(openChat,600);
+  });
+</script>
 
-    function rContacto(){
-      return `
-        <b>📞 Contacto</b><br><br>
-        <b>Teléfono/WhatsApp:</b> ${escapeHtml(SCHOOL.phone)}<br>
-        <b>Correo:</b> ${escapeHtml(SCHOOL.email)}<br><br>
-        <a href="https://wa.me/${encodeURIComponent(SCHOOL.whatsapp)}" target="_blank" rel="noopener">Escribir por WhatsApp</a>
-      `;
-    }
-
-    function rDefault(){
-      return `
-        <b>✅ Gracias por su consulta.</b><br><br>
-        Para ayudarle mejor, por favor indíqueme si necesita información sobre:<br>
-        📝 Matrícula · ⏰ Horarios · 📍 Ubicación · 📚 Ofertas · 📞 Contacto
-      `;
-    }
-
-    function handleAction(action){
-      switch(action){
-        case "matricula": addBubble(rMatricula(), "bot"); break;
-        case "horarios": addBubble(rHorarios(), "bot"); break;
-        case "ubicacion": addBubble(rUbicacion(), "bot"); break;
-        case "ofertas": addBubble(rOfertas(), "bot"); break;
-        case "contacto": addBubble(rContacto(), "bot"); break;
-        default: addBubble(rDefault(), "bot");
-      }
-    }
-
-    function matchIntent(text){
-      const t = text.toLowerCase();
-
-      if(t.includes("matr") || t.includes("inscrip") || t.includes("requisit") || t.includes("pago") || t.includes("arancel")){
-        return "matricula";
-      }
-      if(t.includes("horario") || t.includes("hora") || t.includes("atienden") || t.includes("atención") || t.includes("atencion")){
-        return "horarios";
-      }
-      if(t.includes("ubic") || t.includes("direc") || t.includes("donde") || t.includes("mapa") || t.includes("llegar")){
-        return "ubicacion";
-      }
-      if(t.includes("oferta") || t.includes("prees") || t.includes("primar") || t.includes("ingles") || t.includes("tecnolog") || t.includes("psicoped")){
-        return "ofertas";
-      }
-      if(t.includes("tel") || t.includes("whats") || t.includes("correo") || t.includes("contact")){
-        return "contacto";
-      }
-      return null;
-    }
-
-    function openChat(){
-      chat.classList.add("open");
-      fab.style.display = "none";
-      input.focus();
-
-      if(body.childElementCount === 0){
-        addBubble(
-          `<b>👋 Bienvenido(a) al asistente virtual del ${escapeHtml(SCHOOL.name)}.</b><br><br>
-           Estoy aquí para brindarle información clara y oportuna sobre nuestros servicios educativos.<br><br>
-           <b>⏰ Horario de atención administrativa:</b><br>${escapeHtml(SCHOOL.hours)}<br><br>
-           Por favor, seleccione una opción o escriba su consulta.`,
-          "bot"
-        );
-        addPanel();
-      }
-    }
-
-    function closeChat(){
-      chat.classList.remove("open");
-      fab.style.display = "flex";
-      if("speechSynthesis" in window) window.speechSynthesis.cancel();
-    }
-
-    fab.addEventListener("click", openChat);
-    closeBtn.addEventListener("click", closeChat);
-
-    toggleSoundBtn.addEventListener("click", ()=>{
-      speakEnabled = !speakEnabled;
-      toggleSoundBtn.textContent = speakEnabled ? "🔊" : "🔇";
-      toggleSoundBtn.title = speakEnabled ? "Desactivar lectura por voz" : "Activar lectura por voz";
-      if(!speakEnabled && "speechSynthesis" in window) window.speechSynthesis.cancel();
-    });
-
-    function send(){
-      const text = (input.value || "").trim();
-      if(!text) return;
-
-      addBubble(escapeHtml(text), "user");
-      input.value = "";
-
-      const intent = matchIntent(text);
-      if(intent) handleAction(intent);
-      else addBubble(rDefault(), "bot");
-    }
-
-    sendBtn.addEventListener("click", send);
-    input.addEventListener("keydown", (e)=>{
-      if(e.key === "Enter") send();
-    });
-
-    /***************************************
-     * ✅ CAMBIO: ABRIR AUTOMÁTICO AL ENTRAR
-     * (solo la primera vez – más profesional)
-     ***************************************/
-    window.addEventListener("load", () => {
-      const alreadyOpened = localStorage.getItem("emabot_opened_once");
-      if (!alreadyOpened) {
-        setTimeout(openChat, 800);
-        localStorage.setItem("emabot_opened_once", "1");
-      }
-    });
-  </script>
 </body>
 </html>
-
