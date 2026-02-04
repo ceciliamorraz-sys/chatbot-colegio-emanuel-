@@ -1,322 +1,519 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>EmaBot Widget</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>EmaBot</title>
 
-<style>
-:root{
-  --brand:#1e4ed8;
-  --brand2:#0ea5e9;
-  --panel:#ffffff;
-  --text:#0f172a;
-  --muted:#64748b;
-  --line:#e2e8f0;
-  --soft:#f1f5f9;
-  --ok:#22c55e;
-  --shadow:0 14px 38px rgba(2,6,23,.28);
-  --radius:18px;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#0b1220;min-height:100vh}
+  <style>
+    :root{
+      --brand:#1e4ed8;
+      --brand2:#0ea5e9;
+      --panel:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --soft:#f1f5f9;
+      --ok:#22c55e;
+      --shadow:0 14px 38px rgba(2,6,23,.28);
+      --radius:18px;
+    }
+    *{ box-sizing:border-box; }
 
-/* BOTÓN FLOTANTE (SIEMPRE VISIBLE) */
-.fab{
-  position:fixed;right:18px;bottom:18px;
-  display:flex;align-items:center;gap:10px;
-  background:linear-gradient(135deg,var(--brand),var(--brand2));
-  color:white;border:none;border-radius:999px;
-  padding:12px 14px;box-shadow:var(--shadow);
-  cursor:pointer;font-weight:900;z-index:9999;
-  user-select:none;
-  transition:transform .12s ease, filter .12s ease;
-}
-.fab:hover{transform:translateY(-1px);filter:brightness(1.02)}
-.fab .ico{
-  width:34px;height:34px;border-radius:14px;
-  background:rgba(255,255,255,.14);
-  display:grid;place-items:center;
-  border:1px solid rgba(255,255,255,.25);
-}
+    /* ✅ CLAVE para Google Sites: fondo transparente + sin “bloque” */
+    html, body{
+      margin:0;
+      padding:0;
+      background: transparent !important;
+      height:100%;
+      overflow:hidden; /* evita scroll y “cuadro grande” */
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+    }
 
-/* WIDGET (OCULTO POR DEFECTO) */
-.widget{
-  position:fixed;right:18px;bottom:18px;
-  width:min(420px,calc(100vw - 36px));
-  background:var(--panel);border-radius:var(--radius);
-  box-shadow:var(--shadow);overflow:hidden;
-  opacity:0;pointer-events:none;
-  transform:translateY(10px);
-  transition:opacity .18s ease, transform .18s ease;
-  z-index:10000;
-}
-.widget.open{opacity:1;pointer-events:auto;transform:none}
+    /* =========================
+       BOTÓN FLOTANTE (VISIBLE)
+       ========================= */
+    .fab{
+      position:fixed;
+      right:10px;
+      bottom:10px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      color:white;
+      border:none;
+      border-radius:999px;
+      padding:12px 14px;
+      box-shadow: var(--shadow);
+      cursor:pointer;
+      font-weight:900;
+      z-index:9999;
+      user-select:none;
+      transition: transform .12s ease, filter .12s ease;
+      max-width: calc(100vw - 20px);
+    }
+    .fab:hover{ transform: translateY(-1px); filter: brightness(1.02); }
+    .fab:active{ transform: translateY(0px); }
 
-.topbar{
-  padding:14px;color:white;
-  background:linear-gradient(135deg,var(--brand),var(--brand2));
-  display:flex;justify-content:space-between;align-items:center;
-  gap:10px;
-}
-.brand{display:flex;gap:10px;align-items:center;min-width:0}
-.avatar{
-  width:36px;height:36px;border-radius:14px;
-  background:rgba(255,255,255,.18);
-  display:grid;place-items:center;
-  border:1px solid rgba(255,255,255,.25);
-}
-.title{min-width:0;line-height:1.05}
-.title b{display:block;font-size:14px}
-.title small{
-  font-size:12px;opacity:.92;
-  display:flex;gap:6px;align-items:center;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+    .fab .ico{
+      width:34px; height:34px;
+      border-radius:14px;
+      background: rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.25);
+      display:grid; place-items:center;
+      flex:0 0 auto;
+    }
+    .fab .txt{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-weight:900;
+    }
 
-.iconbtn{
-  width:32px;height:32px;border-radius:12px;
-  border:1px solid rgba(255,255,255,.25);
-  background:rgba(255,255,255,.12);
-  color:white;cursor:pointer;
-  user-select:none;
-  transition:transform .12s ease, background .12s ease;
-}
-.iconbtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.18)}
+    /* En iframes estrechos: solo ícono para que NO se recorte */
+    @media (max-width: 420px){
+      .fab .txt{ display:none; }
+      .fab{ padding:12px; }
+    }
 
-.body{padding:14px;background:#f8fafc}
+    /* =========================
+       WIDGET (OCULTO POR DEFECTO)
+       ========================= */
+    .widget{
+      position:fixed;
+      right:10px;
+      bottom:10px;
+      width:min(420px, calc(100vw - 20px));
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      z-index:10000;
 
-/* CHAT */
-.chat{
-  height:300px;overflow:auto;padding:10px;
-  border:1px solid var(--line);
-  border-radius:16px;background:white;
-}
-.msg{margin:8px 0;display:flex}
-.msg.user{justify-content:flex-end}
-.bubble{
-  max-width:85%;padding:10px 12px;
-  border-radius:14px;border:1px solid var(--line);
-  background:white;font-size:13.5px;line-height:1.35;
-  white-space:pre-line;
-}
-.msg.bot .bubble{border-left:4px solid var(--brand)}
-.msg.user .bubble{background:#eef2ff;border-left:4px solid #60a5fa}
+      opacity:0;
+      pointer-events:none;
+      transform: translateY(10px);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .widget.open{
+      opacity:1;
+      pointer-events:auto;
+      transform:none;
+    }
 
-.row{display:flex;gap:10px;margin-top:10px}
-.btn{
-  flex:1;border:1px solid var(--line);
-  border-radius:14px;padding:10px;
-  background:white;font-weight:900;cursor:pointer;
-  user-select:none;
-  transition:transform .12s ease, background .12s ease, border-color .12s ease;
-  min-height:44px;
-}
-.btn:hover{transform:translateY(-1px);background:#f1f5f9;border-color:#cbd5e1}
-.btn.primary{
-  background:linear-gradient(135deg,var(--brand),var(--brand2));
-  color:white;border:none;
-}
-.btn.danger{
-  background:linear-gradient(135deg,#ef4444,#f97316);
-  color:white;border:none;
-}
+    .topbar{
+      padding:14px;
+      color:white;
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .avatar{
+      width:36px; height:36px;
+      border-radius:14px;
+      background: rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.25);
+      display:grid; place-items:center;
+      flex:0 0 auto;
+    }
+    .title{
+      min-width:0;
+      line-height:1.05;
+    }
+    .title b{ display:block; font-size:14px; }
+    .title small{
+      display:flex; align-items:center; gap:6px;
+      font-size:12px; opacity:.92;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .dot{
+      width:8px; height:8px;
+      border-radius:50%;
+      background: var(--ok);
+      box-shadow:0 0 0 4px rgba(34,197,94,.18);
+      flex:0 0 auto;
+    }
 
-.composer{display:flex;gap:10px;margin-top:10px}
-input{
-  flex:1;border:1px solid var(--line);
-  border-radius:14px;padding:12px;font-size:14px;
-  outline:none;background:white;
-}
-input:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(147,197,253,.25)}
+    .actions{ display:flex; gap:8px; align-items:center; }
+    .iconbtn{
+      width:32px; height:32px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.12);
+      color:white;
+      cursor:pointer;
+      display:grid; place-items:center;
+      user-select:none;
+      transition: transform .12s ease, background .12s ease;
+    }
+    .iconbtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.18); }
 
-.card{
-  margin-top:12px;border:1px solid var(--line);
-  border-radius:16px;padding:12px;background:white
-}
-textarea{
-  width:100%;border:1px solid var(--line);
-  border-radius:14px;padding:12px;margin-top:8px;
-  font-size:14px;resize:vertical;min-height:90px;
-}
-textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(147,197,253,.25);outline:none}
+    .body{
+      padding:14px;
+      background: linear-gradient(180deg, #ffffff, #ffffff 62%, #f8fafc);
+    }
 
-.note{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.35}
-</style>
+    .banner{
+      border:1px solid rgba(226,232,240,.95);
+      background: linear-gradient(135deg, rgba(30,78,216,.10), rgba(14,165,233,.10));
+      border-radius: 16px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .banner b{ color:var(--text); }
+    .banner .sub{
+      color:var(--muted);
+      font-size:12.5px;
+      margin-top:4px;
+      line-height:1.35;
+    }
+    .ctaRow{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+    .pill{
+      border:1px solid var(--line);
+      background:white;
+      border-radius:999px;
+      padding:8px 10px;
+      font-weight:900;
+      font-size:12.5px;
+      cursor:pointer;
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .pill:hover{ transform: translateY(-1px); background:#f1f5f9; border-color:#cbd5e1; }
+    .pill.primary{
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      color:white;
+      border-color: transparent;
+    }
+
+    /* CHAT */
+    .chat{
+      height: 280px;
+      overflow:auto;
+      padding: 10px;
+      background: #f8fafc;
+      border:1px solid var(--line);
+      border-radius: 16px;
+    }
+    .msg{ display:flex; margin:8px 0; }
+    .msg.user{ justify-content:flex-end; }
+    .bubble{
+      max-width: 86%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background:white;
+      color: var(--text);
+      box-shadow: 0 8px 18px rgba(2,6,23,.05);
+      font-size: 13.5px;
+      line-height: 1.35;
+      white-space: pre-line;
+    }
+    .msg.bot .bubble{ border-left: 4px solid var(--brand); }
+    .msg.user .bubble{
+      background: linear-gradient(135deg, #dbeafe, #eef2ff);
+      border-left: 4px solid #60a5fa;
+    }
+
+    .row{ display:flex; gap:10px; margin-top:10px; }
+    .btn{
+      flex:1;
+      border:1px solid var(--line);
+      background: white;
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor:pointer;
+      font-weight:900;
+      user-select:none;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      min-height:44px;
+    }
+    .btn:hover{ transform: translateY(-1px); background:#f1f5f9; border-color:#cbd5e1; }
+    .btn.primary{
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      color:white;
+      border-color: transparent;
+    }
+    .btn.danger{
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color:white;
+      border-color: transparent;
+    }
+
+    .composer{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+      align-items:center;
+    }
+    input[type="text"]{
+      flex:1;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 14px;
+      outline:none;
+      background:white;
+      min-width:0;
+    }
+    input[type="text"]:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(147,197,253,.25);
+    }
+
+    .card{
+      margin-top:12px;
+      border:1px solid var(--line);
+      background:white;
+      border-radius:16px;
+      padding:12px;
+    }
+    textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      margin-top:8px;
+      font-size:14px;
+      resize:vertical;
+      min-height:90px;
+      outline:none;
+      background:white;
+    }
+    textarea:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(147,197,253,.25);
+    }
+    .note{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- BOTÓN: el asistente está OCULTO hasta que presionen este botón -->
-<button class="fab" id="fab" aria-label="Abrir asistente">
-  <span class="ico">🤖</span>
-  <span>EmaBot</span>
-</button>
+  <!-- ✅ Oculto hasta que lo requieran: solo el botón -->
+  <button class="fab" id="fab" aria-label="Abrir asistente">
+    <span class="ico">🤖</span>
+    <span class="txt">EmaBot</span>
+  </button>
 
-<!-- WIDGET -->
-<div class="widget" id="widget" role="application" aria-label="EmaBot Asistente Virtual">
-  <div class="topbar">
-    <div class="brand">
-      <div class="avatar" aria-hidden="true">🤖</div>
-      <div class="title">
-        <b>EmaBot – Asistente Virtual</b>
-        <small><span class="dot" aria-hidden="true"></span> Colegio Integral Emanuel</small>
+  <div class="widget" id="widget" role="application" aria-label="EmaBot Asistente Virtual">
+    <div class="topbar">
+      <div class="brand">
+        <div class="avatar" aria-hidden="true">🤖</div>
+        <div class="title">
+          <b>EmaBot – Asistente Virtual</b>
+          <small><span class="dot" aria-hidden="true"></span><span id="schoolName">Colegio Integral Emanuel</span></small>
+        </div>
       </div>
-    </div>
-    <div>
-      <button class="iconbtn" id="min" title="Minimizar" aria-label="Minimizar">—</button>
-      <button class="iconbtn" id="close" title="Cerrar" aria-label="Cerrar">✕</button>
-    </div>
-  </div>
-
-  <div class="body">
-
-    <div class="chat" id="chat" aria-live="polite"></div>
-
-    <div class="row">
-      <button class="btn" data-action="matricula">📝 Matrícula</button>
-      <button class="btn" data-action="horarios">⏰ Horarios</button>
-    </div>
-    <div class="row">
-      <button class="btn" data-action="ubicacion">📍 Ubicación</button>
-      <button class="btn" data-action="contacto">📞 Contacto</button>
-    </div>
-    <div class="row">
-      <button class="btn danger" data-action="humano">💬 WhatsApp</button>
-    </div>
-
-    <div class="composer">
-      <input id="input" placeholder="Escribe tu consulta…"/>
-      <button class="btn primary" id="send">Enviar</button>
-    </div>
-
-    <!-- Formulario correo -->
-    <div class="card">
-      <b>✉️ Escribir por correo</b>
-      <textarea id="mailMsg" placeholder="Escribe tu mensaje…"></textarea>
-      <button class="btn" id="mailBtn">Enviar correo</button>
-      <div class="note">
-        Esto abre tu app de correo (Gmail/Outlook). Si el asistente no puede resolver tu duda, te enviará a WhatsApp automáticamente.
+      <div class="actions">
+        <button class="iconbtn" id="minBtn" title="Minimizar" aria-label="Minimizar">—</button>
+        <button class="iconbtn" id="closeBtn" title="Cerrar" aria-label="Cerrar">✕</button>
       </div>
     </div>
 
-    <div class="note">🏫 Este asistente brinda información general y no reemplaza la atención directa del colegio.</div>
+    <div class="body">
+      <div class="banner">
+        <b>✨ Información del colegio en segundos</b>
+        <div class="sub">
+          Escribe tu consulta o usa los botones. Si no encuentro una respuesta segura, te envío directo a WhatsApp ✅
+        </div>
+        <div class="ctaRow">
+          <div class="pill primary" id="ctaEnroll">📝 Matrícula</div>
+          <div class="pill" id="ctaMaps">📍 Google Maps</div>
+          <div class="pill" id="ctaWa">💬 WhatsApp</div>
+        </div>
+      </div>
+
+      <div class="chat" id="chat" aria-live="polite"></div>
+
+      <div class="row">
+        <button class="btn" data-action="matricula">📝 Matrícula</button>
+        <button class="btn" data-action="horarios">⏰ Horarios</button>
+      </div>
+      <div class="row">
+        <button class="btn" data-action="ubicacion">📍 Ubicación</button>
+        <button class="btn" data-action="contacto">📞 Contacto</button>
+      </div>
+      <div class="row">
+        <button class="btn danger" data-action="whatsapp">💬 WhatsApp</button>
+      </div>
+
+      <div class="composer">
+        <input id="input" type="text" placeholder="Escribe tu consulta…" autocomplete="off"/>
+        <button class="btn primary" id="sendBtn">Enviar</button>
+      </div>
+
+      <!-- Formulario de correo -->
+      <div class="card">
+        <b>✉️ Escribir por correo</b>
+        <textarea id="mailMsg" placeholder="Escribe tu mensaje…"></textarea>
+        <button class="btn" id="mailBtn">Enviar correo</button>
+        <div class="note">
+          Esto abre tu app de correo (Gmail/Outlook). Para respuesta inmediata, usa WhatsApp.
+        </div>
+      </div>
+
+      <div class="note">🏫 Este asistente brinda información general y no reemplaza la atención directa del colegio.</div>
+    </div>
   </div>
-</div>
 
 <script>
-const CONFIG = {
-  // ✅ Pega aquí tu enlace real de Google Maps
-  mapLink: "PEGA_AQUI_TU_MAPLINK",
+  const CONFIG = {
+    schoolName: "Colegio Integral Emanuel",
+    // ✅ pega aquí tu enlace real
+    mapLink: "PEGA_AQUI_TU_MAPLINK",
+    // ✅ WhatsApp recomendado con código país (Nicaragua 505)
+    whatsapp: "50558057682",
+    phone: "58057682",
+    // ✅ correo real del colegio
+    email: "colegio@ejemplo.com"
+  };
 
-  // ✅ WhatsApp/Contacto (Nicaragua: +505 recomendado)
-  whatsapp: "50558057682",
-  phone: "58057682",
+  const fab = document.getElementById("fab");
+  const widget = document.getElementById("widget");
+  const chat = document.getElementById("chat");
+  const input = document.getElementById("input");
 
-  // ✅ Correo del colegio (cámbialo)
-  email: "colegio@ejemplo.com",
+  document.getElementById("schoolName").textContent = CONFIG.schoolName;
 
-  schoolName: "Colegio Integral Emanuel"
-};
-
-const fab = document.getElementById("fab");
-const widget = document.getElementById("widget");
-const chat = document.getElementById("chat");
-const input = document.getElementById("input");
-
-fab.onclick = () => {
-  widget.classList.add("open");
-  fab.style.display = "none";
-  greetOnce();
-  setTimeout(()=> input.focus(), 50);
-};
-document.getElementById("close").onclick = () => {
-  widget.classList.remove("open");
-  fab.style.display = "flex";
-};
-document.getElementById("min").onclick = () => {
-  widget.classList.remove("open");
-  fab.style.display = "flex";
-};
-
-function add(text, who="bot"){
-  const d = document.createElement("div");
-  d.className = "msg " + who;
-  const safe = String(text).replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  d.innerHTML = `<div class="bubble">${safe}</div>`;
-  chat.appendChild(d);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-let greeted = false;
-function greetOnce(){
-  if(greeted) return;
-  greeted = true;
-  add(`👋 ¡Bienvenido(a)! Soy EmaBot.\nPuedo brindarte información general del colegio.\nSi no encuentro una respuesta segura, te enviaré a WhatsApp ✅`);
-}
-
-function openWhatsApp(prefill){
-  const url = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(prefill || "")}`;
-  window.open(url, "_blank");
-}
-
-function escalateUnknown(userText){
-  add("🧑‍💼 No encontré una respuesta segura. Te redirijo a WhatsApp para atención directa ✅");
-  const prefill = `Hola, necesito información del ${CONFIG.schoolName}.\nMi consulta fue: "${userText || "—"}"`;
-  openWhatsApp(prefill);
-}
-
-function respond(text){
-  const t = (text || "").toLowerCase();
-
-  // Respuestas básicas (ajusta a tus datos reales)
-  if(t.includes("matri") || t === "matricula"){
-    add("📝 Matrícula: Indícame el nivel (Preescolar, Primaria o Secundaria) y te guío con requisitos y pasos.");
-    return;
+  function openWidget(){
+    widget.classList.add("open");
+    fab.style.display = "none";
+    greetOnce();
+    setTimeout(()=>input.focus(), 60);
   }
-  if(t.includes("hora") || t === "horarios"){
-    add("⏰ Horario de atención: Lunes a Viernes 7:00 a.m. – 3:00 p.m.");
-    return;
+  function hideWidget(){
+    widget.classList.remove("open");
+    fab.style.display = "flex";
   }
-  if(t.includes("ubi") || t.includes("map") || t === "ubicacion"){
-    if(!CONFIG.mapLink || CONFIG.mapLink.includes("PEGA_AQUI")){
-      return escalateUnknown("Ubicación (falta configurar el enlace de Google Maps).");
+
+  fab.addEventListener("click", openWidget);
+  document.getElementById("closeBtn").addEventListener("click", hideWidget);
+  document.getElementById("minBtn").addEventListener("click", hideWidget);
+
+  function addMsg(text, who="bot"){
+    const row = document.createElement("div");
+    row.className = "msg " + who;
+
+    // escape básico
+    const safe = String(text).replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.innerHTML = safe.replace(/\n/g,"<br/>");
+
+    row.appendChild(bubble);
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  let greeted = false;
+  function greetOnce(){
+    if(greeted) return;
+    greeted = true;
+    addMsg("👋 ¡Bienvenido(a)! Soy EmaBot.\nPuedo brindarte información general del colegio.\nSi no encuentro una respuesta segura, te envío a WhatsApp ✅");
+  }
+
+  function openWhatsApp(prefill){
+    const url = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(prefill || "")}`;
+    window.open(url, "_blank");
+  }
+
+  function escalateUnknown(userText){
+    addMsg("🧑‍💼 No encontré una respuesta segura. Te redirijo a WhatsApp para atención directa ✅");
+    const prefill = `Hola, necesito información del ${CONFIG.schoolName}.\nMi consulta fue: "${userText || "—"}"`;
+    openWhatsApp(prefill);
+  }
+
+  function respond(text){
+    const t = (text || "").toLowerCase();
+
+    // Acciones rápidas
+    if(t === "matricula" || t.includes("matri")){
+      addMsg("📝 Matrícula: Indícame el nivel (Preescolar, Primaria o Secundaria) y te guío con requisitos y pasos.");
+      return;
     }
-    add(`📍 Ubicación (Google Maps):\n${CONFIG.mapLink}`);
-    return;
+    if(t === "horarios" || t.includes("hora")){
+      addMsg("⏰ Horario de atención: Lunes a Viernes 7:00 a.m. – 3:00 p.m.");
+      return;
+    }
+    if(t === "ubicacion" || t.includes("ubi") || t.includes("map")){
+      if(!CONFIG.mapLink || CONFIG.mapLink.includes("PEGA_AQUI")){
+        escalateUnknown("Ubicación (falta configurar el enlace de Google Maps).");
+        return;
+      }
+      addMsg(`📍 Google Maps:\n${CONFIG.mapLink}`);
+      return;
+    }
+    if(t === "contacto" || t.includes("contac")){
+      addMsg(`📞 Contacto:\nTel: ${CONFIG.phone}\nWhatsApp: https://wa.me/${CONFIG.whatsapp}\nCorreo: ${CONFIG.email}`);
+      return;
+    }
+    if(t === "whatsapp" || t.includes("admin") || t.includes("secretaria") || t.includes("secretaría")){
+      openWhatsApp(`Hola, necesito información del ${CONFIG.schoolName}.`);
+      return;
+    }
+
+    // ✅ Si no sabe → WhatsApp automático
+    escalateUnknown(text);
   }
-  if(t.includes("contac") || t === "contacto"){
-    add(`📞 Contacto:\nTel: ${CONFIG.phone}\nWhatsApp: https://wa.me/${CONFIG.whatsapp}\nCorreo: ${CONFIG.email}`);
-    return;
-  }
-  if(t === "humano" || t.includes("whatsapp") || t.includes("admin")){
-    return openWhatsApp(`Hola, necesito información del ${CONFIG.schoolName}.`);
-  }
 
-  // ✅ Si no sabe → WhatsApp automático
-  return escalateUnknown(text);
-}
+  document.getElementById("sendBtn").addEventListener("click", () => {
+    const t = input.value.trim();
+    if(!t) return;
+    addMsg(t, "user");
+    input.value = "";
+    respond(t);
+  });
 
-document.getElementById("send").onclick = () => {
-  const t = input.value.trim();
-  if(!t) return;
-  add(t, "user");
-  input.value = "";
-  respond(t);
-};
+  input.addEventListener("keydown", (e) => {
+    if(e.key === "Enter"){
+      document.getElementById("sendBtn").click();
+    }
+  });
 
-document.querySelectorAll("[data-action]").forEach(btn=>{
-  btn.onclick = () => respond(btn.dataset.action);
-});
+  document.querySelectorAll("[data-action]").forEach(btn=>{
+    btn.addEventListener("click", () => respond(btn.dataset.action));
+  });
 
-document.getElementById("mailBtn").onclick = () => {
-  const msg = document.getElementById("mailMsg").value.trim();
-  const subject = `Consulta – ${CONFIG.schoolName}`;
-  const body = msg || "Escriba aquí su consulta…";
-  window.location.href = `mailto:${encodeURIComponent(CONFIG.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  add("✉️ Listo. Se abrirá tu correo para enviar el mensaje.");
-};
+  // CTA
+  document.getElementById("ctaEnroll").addEventListener("click", () => respond("matricula"));
+  document.getElementById("ctaMaps").addEventListener("click", () => respond("ubicacion"));
+  document.getElementById("ctaWa").addEventListener("click", () => respond("whatsapp"));
+
+  // Form correo
+  document.getElementById("mailBtn").addEventListener("click", () => {
+    const msg = document.getElementById("mailMsg").value.trim();
+    const subject = `Consulta – ${CONFIG.schoolName}`;
+    const body = msg || "Escriba aquí su consulta…";
+    window.location.href = `mailto:${encodeURIComponent(CONFIG.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    addMsg("✉️ Listo. Se abrirá tu correo para enviar el mensaje.");
+  });
+
+  // ✅ Inicia oculto SIEMPRE (solo botón)
+  // openWidget();  // (no lo usamos)
 </script>
 
 </body>
