@@ -1,717 +1,322 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EmaBot Widget</title>
-  <style>
-    :root{
-      --brand:#1e4ed8;
-      --brand2:#0ea5e9;
-      --panel:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --line:#e2e8f0;
-      --soft:#f1f5f9;
-      --ok:#22c55e;
-      --shadow: 0 14px 38px rgba(2,6,23,.28);
-      --radius: 18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
-      background:#0b1220;
-      min-height:100vh;
-    }
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>EmaBot Widget</title>
 
-    /* =========================
-       BOTÓN FLOTANTE (PLEGABLE)
-       ========================= */
-    .fab{
-      position:fixed;
-      right:18px;
-      bottom:18px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      background: linear-gradient(135deg, var(--brand), var(--brand2));
-      color:white;
-      border:none;
-      border-radius:999px;
-      padding:12px 14px;
-      box-shadow: var(--shadow);
-      cursor:pointer;
-      font-weight:900;
-      z-index:9999;
-      user-select:none;
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .fab:hover{transform: translateY(-1px); filter: brightness(1.02)}
-    .fab:active{transform: translateY(0px)}
-    .fab .ico{
-      width:34px; height:34px;
-      border-radius:14px;
-      background: rgba(255,255,255,.14);
-      border:1px solid rgba(255,255,255,.25);
-      display:grid; place-items:center;
-      box-shadow: 0 10px 22px rgba(0,0,0,.18);
-    }
-    .fab small{font-weight:700; opacity:.92}
+<style>
+:root{
+  --brand:#1e4ed8;
+  --brand2:#0ea5e9;
+  --panel:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --line:#e2e8f0;
+  --soft:#f1f5f9;
+  --ok:#22c55e;
+  --shadow:0 14px 38px rgba(2,6,23,.28);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#0b1220;min-height:100vh}
 
-    /* =========================
-       PANEL / WIDGET
-       ========================= */
-    .widget{
-      position:fixed;
-      right:18px;
-      bottom:18px;
-      width:min(420px, calc(100vw - 36px));
-      background: var(--panel);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      z-index:10000;
-      transform: translateY(10px);
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .16s ease, transform .16s ease;
-    }
-    .widget.open{
-      transform: translateY(0);
-      opacity:1;
-      pointer-events:auto;
-    }
+/* BOTÓN FLOTANTE (SIEMPRE VISIBLE) */
+.fab{
+  position:fixed;right:18px;bottom:18px;
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  color:white;border:none;border-radius:999px;
+  padding:12px 14px;box-shadow:var(--shadow);
+  cursor:pointer;font-weight:900;z-index:9999;
+  user-select:none;
+  transition:transform .12s ease, filter .12s ease;
+}
+.fab:hover{transform:translateY(-1px);filter:brightness(1.02)}
+.fab .ico{
+  width:34px;height:34px;border-radius:14px;
+  background:rgba(255,255,255,.14);
+  display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.25);
+}
 
-    .topbar{
-      padding:14px;
-      color:white;
-      background: linear-gradient(135deg, var(--brand), var(--brand2));
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .brand{
-      display:flex; gap:10px; align-items:center;
-      min-width:0;
-    }
-    .avatar{
-      width:38px; height:38px;
-      border-radius:14px;
-      background: rgba(255,255,255,.16);
-      border:1px solid rgba(255,255,255,.25);
-      display:grid; place-items:center;
-    }
-    .title{min-width:0; line-height:1.05}
-    .title b{display:block; font-size:14.5px}
-    .title small{
-      display:flex; align-items:center; gap:7px;
-      font-size:12px; opacity:.94;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-    .dot{
-      width:8px; height:8px; border-radius:50%;
-      background: var(--ok);
-      box-shadow:0 0 0 4px rgba(34,197,94,.18);
-      animation: pulse 1.6s ease-in-out infinite;
-      flex:0 0 auto;
-    }
-    @keyframes pulse{
-      0%,100%{transform:scale(1); opacity:.9}
-      50%{transform:scale(1.25); opacity:1}
-    }
+/* WIDGET (OCULTO POR DEFECTO) */
+.widget{
+  position:fixed;right:18px;bottom:18px;
+  width:min(420px,calc(100vw - 36px));
+  background:var(--panel);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;
+  opacity:0;pointer-events:none;
+  transform:translateY(10px);
+  transition:opacity .18s ease, transform .18s ease;
+  z-index:10000;
+}
+.widget.open{opacity:1;pointer-events:auto;transform:none}
 
-    .actions{display:flex; gap:8px; align-items:center}
-    .iconbtn{
-      width:34px; height:34px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.25);
-      background: rgba(255,255,255,.12);
-      color:white;
-      cursor:pointer;
-      display:grid; place-items:center;
-      user-select:none;
-      transition: transform .12s ease, background .12s ease;
-    }
-    .iconbtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.18)}
+.topbar{
+  padding:14px;color:white;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;
+}
+.brand{display:flex;gap:10px;align-items:center;min-width:0}
+.avatar{
+  width:36px;height:36px;border-radius:14px;
+  background:rgba(255,255,255,.18);
+  display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.25);
+}
+.title{min-width:0;line-height:1.05}
+.title b{display:block;font-size:14px}
+.title small{
+  font-size:12px;opacity:.92;
+  display:flex;gap:6px;align-items:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
 
-    .body{
-      padding:14px;
-      background: linear-gradient(180deg, #ffffff, #ffffff 62%, #f8fafc);
-    }
+.iconbtn{
+  width:32px;height:32px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.12);
+  color:white;cursor:pointer;
+  user-select:none;
+  transition:transform .12s ease, background .12s ease;
+}
+.iconbtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.18)}
 
-    .banner{
-      border:1px solid rgba(226,232,240,.95);
-      background: linear-gradient(135deg, rgba(30,78,216,.10), rgba(14,165,233,.10));
-      border-radius: 16px;
-      padding:12px;
-      margin-bottom:12px;
-    }
-    .banner b{color:var(--text)}
-    .banner .sub{color:var(--muted); font-size:12.5px; margin-top:4px; line-height:1.35;}
-    .ctaRow{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
-    .pill{
-      border:1px solid var(--line);
-      background:white;
-      border-radius:999px;
-      padding:8px 10px;
-      font-weight:900;
-      font-size:12.5px;
-      cursor:pointer;
-      user-select:none;
-      display:inline-flex; align-items:center; gap:8px;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
-    }
-    .pill:hover{transform: translateY(-1px); background:#f1f5f9; border-color:#cbd5e1}
-    .pill.primary{
-      background: linear-gradient(135deg, var(--brand), var(--brand2));
-      color:white;
-      border-color: transparent;
-    }
+.body{padding:14px;background:#f8fafc}
 
-    .chat{
-      height: 300px;
-      overflow:auto;
-      padding: 10px;
-      background: #f8fafc;
-      border:1px solid var(--line);
-      border-radius: 16px;
-      position:relative;
-    }
-    .typing{
-      position:absolute;
-      bottom:10px;
-      left:10px;
-      background:white;
-      border:1px solid var(--line);
-      border-radius: 999px;
-      padding:6px 10px;
-      font-size:12px;
-      color:var(--muted);
-      box-shadow: 0 6px 16px rgba(2,6,23,.05);
-      display:none;
-      align-items:center;
-      gap:8px;
-    }
-    .dots{display:inline-flex; gap:3px;}
-    .dots span{
-      width:5px; height:5px; border-radius:50%;
-      background:#94a3b8;
-      opacity:.4;
-      animation: bounce 1.1s infinite;
-    }
-    .dots span:nth-child(2){animation-delay:.15s}
-    .dots span:nth-child(3){animation-delay:.30s}
-    @keyframes bounce{
-      0%,100%{transform: translateY(0); opacity:.35}
-      50%{transform: translateY(-3px); opacity:.9}
-    }
+/* CHAT */
+.chat{
+  height:300px;overflow:auto;padding:10px;
+  border:1px solid var(--line);
+  border-radius:16px;background:white;
+}
+.msg{margin:8px 0;display:flex}
+.msg.user{justify-content:flex-end}
+.bubble{
+  max-width:85%;padding:10px 12px;
+  border-radius:14px;border:1px solid var(--line);
+  background:white;font-size:13.5px;line-height:1.35;
+  white-space:pre-line;
+}
+.msg.bot .bubble{border-left:4px solid var(--brand)}
+.msg.user .bubble{background:#eef2ff;border-left:4px solid #60a5fa}
 
-    .msg{display:flex; gap:10px; margin: 10px 0; align-items:flex-end;}
-    .bubble{
-      max-width: 86%;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border:1px solid var(--line);
-      background:white;
-      color: var(--text);
-      box-shadow: 0 8px 18px rgba(2,6,23,.05);
-      font-size: 13.5px;
-      line-height: 1.35;
-      white-space: pre-line;
-    }
-    .msg.bot .bubble{border-left: 4px solid var(--brand)}
-    .msg.user{justify-content:flex-end}
-    .msg.user .bubble{
-      background: linear-gradient(135deg, #dbeafe, #eef2ff);
-      border-left: 4px solid #60a5fa;
-    }
+.row{display:flex;gap:10px;margin-top:10px}
+.btn{
+  flex:1;border:1px solid var(--line);
+  border-radius:14px;padding:10px;
+  background:white;font-weight:900;cursor:pointer;
+  user-select:none;
+  transition:transform .12s ease, background .12s ease, border-color .12s ease;
+  min-height:44px;
+}
+.btn:hover{transform:translateY(-1px);background:#f1f5f9;border-color:#cbd5e1}
+.btn.primary{
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  color:white;border:none;
+}
+.btn.danger{
+  background:linear-gradient(135deg,#ef4444,#f97316);
+  color:white;border:none;
+}
 
-    .tiny{
-      font-size:11px;
-      color:var(--muted);
-      margin-top:6px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
+.composer{display:flex;gap:10px;margin-top:10px}
+input{
+  flex:1;border:1px solid var(--line);
+  border-radius:14px;padding:12px;font-size:14px;
+  outline:none;background:white;
+}
+input:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(147,197,253,.25)}
 
-    .row{display:flex; gap:10px; margin-top:10px;}
-    .row .btn{flex:1;}
-    .btn{
-      border:1px solid var(--line);
-      background: white;
-      border-radius: 14px;
-      padding: 10px 12px;
-      cursor:pointer;
-      font-weight:900;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
-      user-select:none;
-      min-height:44px;
-    }
-    .btn:hover{transform: translateY(-1px); background:#f1f5f9; border-color:#cbd5e1}
-    .btn.primary{
-      background: linear-gradient(135deg, var(--brand), var(--brand2));
-      color:white;
-      border-color: transparent;
-    }
-    .btn.danger{
-      background: linear-gradient(135deg, #ef4444, #f97316);
-      color:white;
-      border-color: transparent;
-    }
+.card{
+  margin-top:12px;border:1px solid var(--line);
+  border-radius:16px;padding:12px;background:white
+}
+textarea{
+  width:100%;border:1px solid var(--line);
+  border-radius:14px;padding:12px;margin-top:8px;
+  font-size:14px;resize:vertical;min-height:90px;
+}
+textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(147,197,253,.25);outline:none}
 
-    .composer{display:flex; gap:10px; margin-top:10px; align-items:center;}
-    input[type="text"]{
-      flex:1;
-      border:1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px 12px;
-      font-size: 14px;
-      outline:none;
-      background:white;
-    }
-    input[type="text"]:focus{border-color:#93c5fd; box-shadow:0 0 0 4px rgba(147,197,253,.25)}
-    .send{width:96px;}
-
-    .card{
-      border:1px solid var(--line);
-      background:white;
-      border-radius:16px;
-      padding:14px;
-      box-shadow: 0 8px 22px rgba(2,6,23,.06);
-      margin-top:12px;
-    }
-    .card h3{margin:0 0 6px 0; font-size:15px; color:var(--text);}
-    .meta{color:var(--muted); font-size:12.5px; line-height:1.35;}
-    .mini{font-size:12px; color:var(--muted); margin-top:8px;}
-    .hidden{display:none!important;}
-
-    .formGrid{display:grid; gap:10px; margin-top:10px;}
-    .formGrid input, .formGrid textarea{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      font-size:14px;
-      outline:none;
-      background:white;
-    }
-    .formGrid textarea{min-height:90px; resize:vertical;}
-    .formGrid input:focus,.formGrid textarea:focus{
-      border-color:#93c5fd;
-      box-shadow:0 0 0 4px rgba(147,197,253,.25)
-    }
-  </style>
+.note{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.35}
+</style>
 </head>
 
 <body>
 
-  <!-- Botón flotante -->
-  <button class="fab" id="fab" aria-label="Abrir asistente">
-    <span class="ico">🤖</span>
-    <span>
-      EmaBot <small>• Ayuda rápida</small>
-    </span>
-  </button>
+<!-- BOTÓN: el asistente está OCULTO hasta que presionen este botón -->
+<button class="fab" id="fab" aria-label="Abrir asistente">
+  <span class="ico">🤖</span>
+  <span>EmaBot</span>
+</button>
 
-  <!-- Widget plegable -->
-  <div class="widget" id="widget" role="application" aria-label="EmaBot Asistente Virtual">
-    <div class="topbar">
-      <div class="brand">
-        <div class="avatar" aria-hidden="true">🤖</div>
-        <div class="title">
-          <b>EmaBot – Asistente Virtual</b>
-          <small><span class="dot" aria-hidden="true"></span><span id="schoolName">Colegio Integral Emanuel</span></small>
-        </div>
-      </div>
-      <div class="actions">
-        <button class="iconbtn" id="btnVoice" title="Voz: activar/desactivar" aria-label="Voz">🔊</button>
-        <button class="iconbtn" id="btnMin" title="Minimizar" aria-label="Minimizar">—</button>
-        <button class="iconbtn" id="btnClose" title="Cerrar" aria-label="Cerrar">✕</button>
+<!-- WIDGET -->
+<div class="widget" id="widget" role="application" aria-label="EmaBot Asistente Virtual">
+  <div class="topbar">
+    <div class="brand">
+      <div class="avatar" aria-hidden="true">🤖</div>
+      <div class="title">
+        <b>EmaBot – Asistente Virtual</b>
+        <small><span class="dot" aria-hidden="true"></span> Colegio Integral Emanuel</small>
       </div>
     </div>
-
-    <div class="body">
-      <div class="banner">
-        <b>✨ Información del colegio en segundos</b>
-        <div class="sub">
-          Escribe tu consulta o usa los botones. Si no encuentro una respuesta segura, te envío directo a WhatsApp.
-        </div>
-        <div class="ctaRow">
-          <div class="pill primary" id="ctaEnroll">📝 Matrícula</div>
-          <div class="pill" id="ctaMaps">📍 Google Maps</div>
-          <div class="pill" id="ctaWa">💬 WhatsApp</div>
-        </div>
-      </div>
-
-      <div class="chat" id="chat" aria-live="polite">
-        <div class="typing" id="typing">
-          <span><b>EmaBot</b> está escribiendo</span>
-          <span class="dots" aria-hidden="true"><span></span><span></span><span></span></span>
-        </div>
-      </div>
-
-      <div class="row">
-        <button class="btn" data-action="matricula">📝 Matrícula</button>
-        <button class="btn" data-action="horarios">⏰ Horarios</button>
-      </div>
-      <div class="row">
-        <button class="btn" data-action="ubicacion">📍 Ubicación</button>
-        <button class="btn" data-action="oferta">📚 Oferta</button>
-      </div>
-      <div class="row">
-        <button class="btn" data-action="contacto">📞 Contacto</button>
-        <button class="btn danger" data-action="humano">🧑‍💼 Administración</button>
-      </div>
-
-      <div class="composer">
-        <input id="input" type="text" placeholder="Escribe tu consulta aquí…" autocomplete="off" />
-        <button class="btn primary send" id="sendBtn">Enviar</button>
-      </div>
-
-      <!-- Formulario correo -->
-      <div class="card" id="mailCard">
-        <h3>✉️ Escribir por correo</h3>
-        <div class="meta">Completa el formulario y se abrirá tu correo con el mensaje listo para enviar.</div>
-
-        <div class="formGrid">
-          <input id="fName" type="text" placeholder="Tu nombre" />
-          <input id="fEmail" type="email" placeholder="Tu correo (opcional)" />
-          <textarea id="fMsg" placeholder="Escribe tu mensaje…"></textarea>
-          <button class="btn" id="btnMail">Enviar por correo</button>
-        </div>
-
-        <div class="mini">
-          🧾 Nota: Esto usa <b>mailto:</b> (abre Gmail/Outlook instalado o configurado en el dispositivo).
-        </div>
-      </div>
-
-      <div class="mini">
-        🏫 Este asistente brinda orientación informativa y no reemplaza la atención directa del colegio.
-      </div>
+    <div>
+      <button class="iconbtn" id="min" title="Minimizar" aria-label="Minimizar">—</button>
+      <button class="iconbtn" id="close" title="Cerrar" aria-label="Cerrar">✕</button>
     </div>
   </div>
 
+  <div class="body">
+
+    <div class="chat" id="chat" aria-live="polite"></div>
+
+    <div class="row">
+      <button class="btn" data-action="matricula">📝 Matrícula</button>
+      <button class="btn" data-action="horarios">⏰ Horarios</button>
+    </div>
+    <div class="row">
+      <button class="btn" data-action="ubicacion">📍 Ubicación</button>
+      <button class="btn" data-action="contacto">📞 Contacto</button>
+    </div>
+    <div class="row">
+      <button class="btn danger" data-action="humano">💬 WhatsApp</button>
+    </div>
+
+    <div class="composer">
+      <input id="input" placeholder="Escribe tu consulta…"/>
+      <button class="btn primary" id="send">Enviar</button>
+    </div>
+
+    <!-- Formulario correo -->
+    <div class="card">
+      <b>✉️ Escribir por correo</b>
+      <textarea id="mailMsg" placeholder="Escribe tu mensaje…"></textarea>
+      <button class="btn" id="mailBtn">Enviar correo</button>
+      <div class="note">
+        Esto abre tu app de correo (Gmail/Outlook). Si el asistente no puede resolver tu duda, te enviará a WhatsApp automáticamente.
+      </div>
+    </div>
+
+    <div class="note">🏫 Este asistente brinda información general y no reemplaza la atención directa del colegio.</div>
+  </div>
+</div>
+
 <script>
-/* =========================
-   CONFIGURACIÓN
-   ========================= */
 const CONFIG = {
-  schoolName: "Colegio Integral Emanuel",
+  // ✅ Pega aquí tu enlace real de Google Maps
+  mapLink: "PEGA_AQUI_TU_MAPLINK",
 
-  // 📍 Pega tu enlace real de Google Maps
-  mapsLink: "https://maps.app.goo.gl/PLdAiWjSFv9Y2ubG8",
+  // ✅ WhatsApp/Contacto (Nicaragua: +505 recomendado)
+  whatsapp: "50558057682",
+  phone: "58057682",
 
-  // 📞 Contacto que pediste
-  phoneDisplay: "58057682",
-  // WhatsApp recomendado con código país (Nicaragua 505)
-  whatsappNumber: "50558057682",
+  // ✅ Correo del colegio (cámbialo)
+  email: "colegio@ejemplo.com",
 
-  // Correo destino (cámbialo)
-  emailTo: "colegio@ejemplo.com",
-
-  // Contenidos base
-  officeHours: "Lunes a Viernes | 7:00 a.m. – 3:00 p.m.",
-  addressText: "Escribe aquí la dirección del colegio (barrio, calles, referencias).",
-  academicOffer: [
-    "📚 Niveles: Preescolar • Primaria • Secundaria",
-    "🧩 Actividades: deportivas, culturales y refuerzo académico (según plan del centro)."
-  ],
-  enrollmentInfo: {
-    general: [
-      "✅ Requisitos comunes: Partida de nacimiento, cédula del tutor, récord de notas (si aplica), 2 fotos tamaño carnet.",
-      "✅ Proceso: 1) Solicitud 2) Revisión 3) Pago 4) Confirmación de cupo."
-    ]
-  }
+  schoolName: "Colegio Integral Emanuel"
 };
 
-/* =========================
-   ESTADO
-   ========================= */
-const state = {
-  voiceEnabled: true,
-  greeted: false,
-  pendingSlot: null,   // "nivel"
-  lastIntent: null
-};
+const fab = document.getElementById("fab");
+const widget = document.getElementById("widget");
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
 
-/* =========================
-   HELPERS
-   ========================= */
-const $ = (s) => document.querySelector(s);
-const fab = $("#fab");
-const widget = $("#widget");
-const chat = $("#chat");
-const input = $("#input");
-const typing = $("#typing");
-$("#schoolName").textContent = CONFIG.schoolName;
-
-function openWidget(){
+fab.onclick = () => {
   widget.classList.add("open");
   fab.style.display = "none";
-  if(!state.greeted) greet();
-  setTimeout(() => input.focus(), 50);
-}
-function closeWidget(){
+  greetOnce();
+  setTimeout(()=> input.focus(), 50);
+};
+document.getElementById("close").onclick = () => {
   widget.classList.remove("open");
   fab.style.display = "flex";
-}
-function minimizeWidget(){
-  closeWidget();
-}
+};
+document.getElementById("min").onclick = () => {
+  widget.classList.remove("open");
+  fab.style.display = "flex";
+};
 
-function scrollDown(){ chat.scrollTop = chat.scrollHeight; }
-function showTyping(ms=650){
-  typing.style.display = "inline-flex";
-  scrollDown();
-  setTimeout(()=> typing.style.display="none", ms);
-}
-
-function addMsg(text, who="bot"){
-  const row = document.createElement("div");
-  row.className = `msg ${who}`;
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-  bubble.textContent = text;
-  row.appendChild(bubble);
-  chat.appendChild(row);
-
-  if(who === "bot"){
-    const tiny = document.createElement("div");
-    tiny.className = "tiny";
-    tiny.innerHTML = `
-      <span>¿Te sirvió?</span>
-      <span class="linklike" data-feedback="up">👍 Sí</span>
-      <span class="linklike" data-feedback="down">👎 No</span>
-      <span class="linklike" data-action="humano">💬 WhatsApp</span>
-    `;
-    row.appendChild(tiny);
-  }
-
-  scrollDown();
+function add(text, who="bot"){
+  const d = document.createElement("div");
+  d.className = "msg " + who;
+  const safe = String(text).replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  d.innerHTML = `<div class="bubble">${safe}</div>`;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
 }
 
-function speak(text){
-  if(!state.voiceEnabled) return;
-  if(!("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "es-ES";
-  u.rate = 1.02;
-  u.pitch = 1.0;
-  window.speechSynthesis.speak(u);
+let greeted = false;
+function greetOnce(){
+  if(greeted) return;
+  greeted = true;
+  add(`👋 ¡Bienvenido(a)! Soy EmaBot.\nPuedo brindarte información general del colegio.\nSi no encuentro una respuesta segura, te enviaré a WhatsApp ✅`);
 }
 
-/* =========================
-   CONTACTO / ESCALAMIENTO
-   ========================= */
-function openWhatsApp(prefill=""){
-  const url = `https://wa.me/${CONFIG.whatsappNumber}${prefill ? `?text=${encodeURIComponent(prefill)}` : ""}`;
+function openWhatsApp(prefill){
+  const url = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(prefill || "")}`;
   window.open(url, "_blank");
 }
-function callPhone(){
-  window.location.href = `tel:${CONFIG.phoneDisplay}`;
-}
 
-function escalateUnknown(userText=""){
-  state.lastIntent = "humano";
-  showTyping(650);
-
-  const prefill =
-`Hola, necesito información del ${CONFIG.schoolName}.
-Mi consulta fue: "${userText || "—"}"`;
-
-  addMsg(
-`🧑‍💼 No encontré una respuesta segura para tu consulta.\n\nTe enviaré a WhatsApp para atención directa ✅\n\n📞 Teléfono: ${CONFIG.phoneDisplay}\n💬 WhatsApp: https://wa.me/${CONFIG.whatsappNumber}\n\n(Se abrirá WhatsApp automáticamente.)`
-  );
-  speak("Te enviaré a WhatsApp para atención directa.");
-  // Abrir WhatsApp automáticamente
+function escalateUnknown(userText){
+  add("🧑‍💼 No encontré una respuesta segura. Te redirijo a WhatsApp para atención directa ✅");
+  const prefill = `Hola, necesito información del ${CONFIG.schoolName}.\nMi consulta fue: "${userText || "—"}"`;
   openWhatsApp(prefill);
 }
 
-/* =========================
-   INTENCIÓN (simple keywords)
-   ========================= */
-const INTENTS = [
-  {name:"matricula", keys:["matricula","matrícula","inscripción","inscripcion","requisitos","cupo","pago","arancel","precio"]},
-  {name:"horarios", keys:["horario","horarios","entrada","salida","turno","atención","atencion"]},
-  {name:"ubicacion", keys:["ubicación","ubicacion","dirección","direccion","mapa","como llegar","donde queda"]},
-  {name:"oferta", keys:["oferta","niveles","preescolar","primaria","secundaria","grados","materias","programa"]},
-  {name:"contacto", keys:["contacto","telefono","teléfono","whatsapp","correo","email","llamar","escribir"]},
-  {name:"humano", keys:["administración","administracion","secretaria","secretaría","persona","humano","coordinación","director"]}
-];
+function respond(text){
+  const t = (text || "").toLowerCase();
 
-function detectIntent(text){
-  const t = (text||"").toLowerCase();
-  for(const it of INTENTS){
-    for(const k of it.keys){
-      if(t.includes(k)) return it.name;
-    }
+  // Respuestas básicas (ajusta a tus datos reales)
+  if(t.includes("matri") || t === "matricula"){
+    add("📝 Matrícula: Indícame el nivel (Preescolar, Primaria o Secundaria) y te guío con requisitos y pasos.");
+    return;
   }
-  return "desconocido";
+  if(t.includes("hora") || t === "horarios"){
+    add("⏰ Horario de atención: Lunes a Viernes 7:00 a.m. – 3:00 p.m.");
+    return;
+  }
+  if(t.includes("ubi") || t.includes("map") || t === "ubicacion"){
+    if(!CONFIG.mapLink || CONFIG.mapLink.includes("PEGA_AQUI")){
+      return escalateUnknown("Ubicación (falta configurar el enlace de Google Maps).");
+    }
+    add(`📍 Ubicación (Google Maps):\n${CONFIG.mapLink}`);
+    return;
+  }
+  if(t.includes("contac") || t === "contacto"){
+    add(`📞 Contacto:\nTel: ${CONFIG.phone}\nWhatsApp: https://wa.me/${CONFIG.whatsapp}\nCorreo: ${CONFIG.email}`);
+    return;
+  }
+  if(t === "humano" || t.includes("whatsapp") || t.includes("admin")){
+    return openWhatsApp(`Hola, necesito información del ${CONFIG.schoolName}.`);
+  }
+
+  // ✅ Si no sabe → WhatsApp automático
+  return escalateUnknown(text);
 }
 
-/* =========================
-   RESPUESTAS
-   ========================= */
-function greet(){
-  state.greeted = true;
-  showTyping(650);
-  addMsg(`🌟 ¡Hola! Soy EmaBot.\nPuedo ayudarte con matrícula, horarios, ubicación y contacto.\nSi tu consulta es muy específica, te envío directo a WhatsApp ✅`);
-  speak("Hola. Soy EmaBot. Puedo ayudarte con información del colegio.");
-}
-
-function respond(intent, userText=""){
-  state.lastIntent = intent;
-
-  // Slot “nivel” (si quisieras profundizar matrícula)
-  if(state.pendingSlot === "nivel"){
-    const s = (userText||"").toLowerCase();
-    if(!["preescolar","primaria","secundaria","1","2","3"].some(x => s.includes(x))){
-      state.pendingSlot = null;
-      return escalateUnknown(userText);
-    }
-    state.pendingSlot = null;
-    showTyping(650);
-    addMsg(`📝 Matrícula\n\n${CONFIG.enrollmentInfo.general.join("\n")}\n\nSi deseas detalles por nivel, escribe: Preescolar / Primaria / Secundaria.`);
-    speak("Te comparto información de matrícula.");
-    return;
-  }
-
-  if(intent === "matricula"){
-    showTyping(650);
-    addMsg(`📝 Matrícula\n\n${CONFIG.enrollmentInfo.general.join("\n")}\n\n¿Deseas información por nivel? (Preescolar / Primaria / Secundaria)`);
-    speak("Te comparto información de matrícula.");
-    // Puedes activar esto si quieres obligar a nivel:
-    // state.pendingSlot = "nivel";
-    return;
-  }
-
-  if(intent === "horarios"){
-    showTyping(650);
-    addMsg(`⏰ Horario de atención\n\n${CONFIG.officeHours}\n\n¿Necesitas también horarios de clases por nivel?`);
-    speak("Te comparto el horario de atención.");
-    return;
-  }
-
-  if(intent === "ubicacion"){
-    if(!CONFIG.mapsLink || CONFIG.mapsLink.includes("PEGA_AQUI")){
-      return escalateUnknown("Ubicación (falta configurar el mapLink).");
-    }
-    showTyping(650);
-    addMsg(`📍 Ubicación\n\n${CONFIG.addressText}\n\n🗺️ Google Maps: ${CONFIG.mapsLink}\n\n¿Quieres que se abra el mapa? (Puedes presionar “Google Maps” arriba)`);
-    speak("Te comparto la ubicación del colegio.");
-    return;
-  }
-
-  if(intent === "oferta"){
-    showTyping(650);
-    addMsg(`📚 Oferta académica\n\n${CONFIG.academicOffer.join("\n")}\n\nSi deseas detalles de un nivel específico, escríbelo.`);
-    speak("Te comparto la oferta académica.");
-    return;
-  }
-
-  if(intent === "contacto"){
-    showTyping(650);
-    addMsg(`📞 Contacto\n\n📞 Teléfono: ${CONFIG.phoneDisplay}\n💬 WhatsApp: https://wa.me/${CONFIG.whatsappNumber}\n✉️ Correo: ${CONFIG.emailTo}\n\n¿Prefieres llamar o escribir por WhatsApp?`);
-    speak("Te comparto el contacto.");
-    return;
-  }
-
-  if(intent === "humano"){
-    return escalateUnknown(userText);
-  }
-
-  // ✅ Si no sabe → WhatsApp automático (tu requisito)
-  return escalateUnknown(userText);
-}
-
-/* =========================
-   EVENTOS UI
-   ========================= */
-fab.addEventListener("click", openWidget);
-$("#btnClose").addEventListener("click", closeWidget);
-$("#btnMin").addEventListener("click", minimizeWidget);
-
-$("#btnVoice").addEventListener("click", () => {
-  state.voiceEnabled = !state.voiceEnabled;
-  $("#btnVoice").textContent = state.voiceEnabled ? "🔊" : "🔇";
-  showTyping(450);
-  addMsg(state.voiceEnabled ? "🔊 Voz activada." : "🔇 Voz desactivada.");
-  if(state.voiceEnabled) speak("Voz activada.");
-});
-
-$("#ctaEnroll").addEventListener("click", () => respond("matricula"));
-$("#ctaMaps").addEventListener("click", () => {
-  if(CONFIG.mapsLink && !CONFIG.mapsLink.includes("PEGA_AQUI")) window.open(CONFIG.mapsLink, "_blank");
-  else escalateUnknown("Google Maps (falta el mapLink).");
-});
-$("#ctaWa").addEventListener("click", () => openWhatsApp(`Hola, necesito información del ${CONFIG.schoolName}.`));
-
-document.addEventListener("click", (e) => {
-  const action = e.target?.dataset?.action;
-  if(action){
-    if(action === "humano") return escalateUnknown("Atención administrativa");
-    respond(action);
-  }
-  const fb = e.target?.dataset?.feedback;
-  if(fb === "down"){
-    // Si dicen "No", mandar a WhatsApp
-    return escalateUnknown("Feedback: respuesta insuficiente");
-  }
-  if(fb === "up"){
-    showTyping(450);
-    addMsg("¡Gracias! ✅ Me alegra haberte ayudado.");
-    speak("Gracias. Me alegra haber ayudado.");
-  }
-});
-
-$("#sendBtn").addEventListener("click", sendUserText);
-input.addEventListener("keydown", (e) => { if(e.key === "Enter") sendUserText(); });
-
-function sendUserText(){
-  const text = input.value.trim();
-  if(!text) return;
-  addMsg(text, "user");
+document.getElementById("send").onclick = () => {
+  const t = input.value.trim();
+  if(!t) return;
+  add(t, "user");
   input.value = "";
-  const intent = detectIntent(text);
-  respond(intent, text);
-}
+  respond(t);
+};
 
-/* =========================
-   FORMULARIO CORREO (mailto)
-   ========================= */
-$("#btnMail").addEventListener("click", () => {
-  const name = ($("#fName").value || "").trim();
-  const email = ($("#fEmail").value || "").trim();
-  const msg = ($("#fMsg").value || "").trim();
+document.querySelectorAll("[data-action]").forEach(btn=>{
+  btn.onclick = () => respond(btn.dataset.action);
+});
 
+document.getElementById("mailBtn").onclick = () => {
+  const msg = document.getElementById("mailMsg").value.trim();
   const subject = `Consulta – ${CONFIG.schoolName}`;
-  const body =
-`Hola, soy ${name || "—"}.
-Mi correo: ${email || "—"}.
-
-Mensaje:
-${msg || "—"}
-
-Enviado desde EmaBot.`;
-
-  const mailto = `mailto:${encodeURIComponent(CONFIG.emailTo)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailto;
-
-  showTyping(450);
-  addMsg("✉️ Listo. Se abrirá tu correo para enviar el mensaje.");
-  speak("Listo. Se abrirá tu correo para enviar el mensaje.");
-});
-
-/* Mensaje inicial cuando se abre por primera vez */
-window.addEventListener("load", () => {
-  // El widget inicia cerrado (plegable). Si quieres que se abra solo, descomenta:
-  // openWidget();
-});
+  const body = msg || "Escriba aquí su consulta…";
+  window.location.href = `mailto:${encodeURIComponent(CONFIG.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  add("✉️ Listo. Se abrirá tu correo para enviar el mensaje.");
+};
 </script>
 
 </body>
