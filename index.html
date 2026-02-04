@@ -1,533 +1,710 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>EmaBot</title>
+<!-- =========================================================
+ EmaBot (Widget tipo Alexa) - Colegio Integral Emanuel
+ - Chat + voz (habla) + micrófono (escucha) + plegable
+ - Respuestas por intención (hola, dirección, mensualidad, horario, matrícula, contacto)
+ - Si no sabe: muestra botón y abre WhatsApp (en interacción del usuario)
+ - Formulario "Escribir por correo" (mailto)
+ - Logo configurable
+========================================================= -->
 
-  <style>
-    :root{
-      --brand:#1e4ed8;
-      --brand2:#0ea5e9;
-      --panel:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --line:#e2e8f0;
-      --ok:#22c55e;
-      --shadow:0 14px 38px rgba(2,6,23,.28);
-      --radius:18px;
-    }
-    *{ box-sizing:border-box; }
+<div id="emaBotRoot"></div>
 
-    /* ✅ Google Sites iframe: transparente + sin bloque oscuro */
-    html, body{
-      margin:0;
-      padding:0;
-      background: transparent !important;
-      height:100%;
-      overflow:hidden;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
-    }
+<style>
+  :root{
+    --ema-primary:#1d74ff;
+    --ema-primary-2:#0f5ee6;
+    --ema-bg:#ffffff;
+    --ema-soft:#f3f6ff;
+    --ema-text:#0b1b33;
+    --ema-muted:#5c6b82;
+    --ema-border:#e6ecf5;
+    --ema-shadow:0 18px 45px rgba(15, 35, 65, .18);
+    --ema-radius:16px;
+    --ema-font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
 
-    /* =========================
-       BOTÓN FLOTANTE (OCULTO HASTA USAR)
-       ========================= */
-    .fab{
-      position:fixed;
-      right:10px;
-      bottom:10px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      background: linear-gradient(135deg, var(--brand), var(--brand2));
-      color:white;
-      border:none;
-      border-radius:999px;
-      padding:12px 14px;
-      box-shadow: var(--shadow);
-      cursor:pointer;
-      font-weight:900;
-      z-index:9999;
-      user-select:none;
-      transition: transform .12s ease, filter .12s ease;
-      max-width: calc(100vw - 20px);
-    }
-    .fab:hover{ transform: translateY(-1px); filter: brightness(1.02); }
-    .fab:active{ transform: translateY(0px); }
+  /* Floating button */
+  .ema-fab{
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: var(--ema-primary);
+    box-shadow: var(--ema-shadow);
+    border: none;
+    cursor: pointer;
+    z-index: 999999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .ema-fab:hover{ transform: translateY(-2px); background: var(--ema-primary-2); }
+  .ema-fab svg{ width:28px; height:28px; fill:#fff; }
+  .ema-fab-badge{
+    position:absolute;
+    top:8px; right:8px;
+    width:10px; height:10px;
+    border-radius:50%;
+    background:#39d353;
+    border:2px solid rgba(255,255,255,.9);
+  }
 
-    .fab .logoWrap{
-      width:34px; height:34px;
-      border-radius:14px;
-      background: rgba(255,255,255,.14);
-      border:1px solid rgba(255,255,255,.25);
-      display:grid; place-items:center;
-      overflow:hidden;
-      flex:0 0 auto;
-    }
-    .fab img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-    .fab .txt{
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      font-weight:900;
-    }
+  /* Panel */
+  .ema-panel{
+    position: fixed;
+    right: 22px;
+    bottom: 96px;
+    width: 380px;
+    max-width: calc(100vw - 44px);
+    height: 560px;
+    max-height: calc(100vh - 140px);
+    background: var(--ema-bg);
+    border-radius: var(--ema-radius);
+    box-shadow: var(--ema-shadow);
+    overflow: hidden;
+    z-index: 999999;
+    display:none;
+    border: 1px solid var(--ema-border);
+    font-family: var(--ema-font);
+  }
 
-    /* En iframes estrechos: solo icono/logo */
-    @media (max-width: 420px){
-      .fab .txt{ display:none; }
-      .fab{ padding:12px; }
-    }
+  .ema-header{
+    height: 64px;
+    background: linear-gradient(135deg, var(--ema-primary), var(--ema-primary-2));
+    color: #fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .ema-brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width: 0;
+  }
+  .ema-logo{
+    width:40px;
+    height:40px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    flex: 0 0 auto;
+  }
+  .ema-logo img{
+    width:100%;
+    height:100%;
+    object-fit: cover;
+  }
+  .ema-title{
+    line-height: 1.1;
+    min-width:0;
+  }
+  .ema-title strong{
+    display:block;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ema-title span{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size: 12px;
+    opacity: .95;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ema-dot{
+    width:8px; height:8px; border-radius:50%;
+    background:#39d353;
+    box-shadow: 0 0 0 2px rgba(255,255,255,.35);
+  }
 
-    /* =========================
-       WIDGET
-       ========================= */
-    .widget{
-      position:fixed;
-      right:10px;
-      bottom:10px;
-      width:min(420px, calc(100vw - 20px));
-      background: var(--panel);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      z-index:10000;
+  .ema-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .ema-iconbtn{
+    width: 34px; height:34px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.35);
+    background: rgba(255,255,255,.14);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition: background .15s ease;
+  }
+  .ema-iconbtn:hover{ background: rgba(255,255,255,.22); }
+  .ema-iconbtn svg{ width:18px; height:18px; fill:#fff; }
 
-      opacity:0;
-      pointer-events:none;
-      transform: translateY(10px);
-      transition: opacity .18s ease, transform .18s ease;
-    }
-    .widget.open{
-      opacity:1;
-      pointer-events:auto;
-      transform:none;
-    }
+  /* Body */
+  .ema-body{
+    height: calc(100% - 64px);
+    display:flex;
+    flex-direction:column;
+    background: #fff;
+  }
+  .ema-messages{
+    flex:1;
+    padding: 14px;
+    overflow:auto;
+    background: #ffffff;
+  }
+  .ema-msg{
+    display:flex;
+    margin: 10px 0;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .ema-msg.user{ justify-content:flex-end; }
+  .ema-bubble{
+    max-width: 86%;
+    padding: 12px 12px;
+    border-radius: 14px;
+    border: 1px solid var(--ema-border);
+    background: var(--ema-soft);
+    color: var(--ema-text);
+    font-size: 14px;
+    line-height: 1.25rem;
+  }
+  .ema-msg.user .ema-bubble{
+    background: #e8f0ff;
+    border-color:#d6e4ff;
+  }
+  .ema-meta{
+    font-size: 12px;
+    color: var(--ema-muted);
+    margin-top: 6px;
+  }
 
-    .topbar{
-      padding:14px;
-      color:white;
-      background: linear-gradient(135deg, var(--brand), var(--brand2));
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
+  .ema-quick{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top: 10px;
+  }
+  .ema-chip{
+    border: 1px solid var(--ema-border);
+    background: #fff;
+    color: var(--ema-text);
+    padding: 9px 10px;
+    border-radius: 999px;
+    cursor:pointer;
+    font-size: 13px;
+    transition: transform .08s ease, background .15s ease;
+    user-select:none;
+  }
+  .ema-chip:hover{ background:#f7f9ff; transform: translateY(-1px); }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
+  .ema-footer{
+    padding: 10px 12px 12px;
+    border-top: 1px solid var(--ema-border);
+    background:#fff;
+  }
+  .ema-inputrow{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .ema-input{
+    flex:1;
+    border: 1px solid var(--ema-border);
+    border-radius: 12px;
+    padding: 11px 12px;
+    outline:none;
+    font-size: 14px;
+  }
+  .ema-send{
+    background: var(--ema-primary);
+    border:none;
+    color:#fff;
+    padding: 11px 14px;
+    border-radius: 12px;
+    cursor:pointer;
+    font-weight: 600;
+  }
+  .ema-send:hover{ background: var(--ema-primary-2); }
 
-    .logo{
-      width:38px; height:38px;
-      border-radius:14px;
-      background: rgba(255,255,255,.18);
-      border:1px solid rgba(255,255,255,.25);
-      overflow:hidden;
-      flex:0 0 auto;
-      display:grid;
-      place-items:center;
-    }
-    .logo img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
+  .ema-smallrow{
+    margin-top: 10px;
+    display:flex;
+    gap:8px;
+  }
+  .ema-softbtn{
+    flex:1;
+    border: 1px solid var(--ema-border);
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px 10px;
+    cursor:pointer;
+    font-size: 13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+  }
+  .ema-softbtn:hover{ background:#f7f9ff; }
 
-    .title{
-      min-width:0;
-      line-height:1.05;
-    }
-    .title b{ display:block; font-size:14px; }
-    .title small{
-      display:flex; align-items:center; gap:6px;
-      font-size:12px; opacity:.92;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-    .dot{
-      width:8px; height:8px;
-      border-radius:50%;
-      background: var(--ok);
-      box-shadow:0 0 0 4px rgba(34,197,94,.18);
-      flex:0 0 auto;
-    }
+  .ema-mailbox{
+    margin-top: 10px;
+    border: 1px solid var(--ema-border);
+    border-radius: 12px;
+    padding: 10px;
+    background: #fff;
+    display:none;
+  }
+  .ema-mailbox h4{
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: var(--ema-text);
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .ema-textarea{
+    width:100%;
+    min-height: 80px;
+    resize: vertical;
+    border: 1px solid var(--ema-border);
+    border-radius: 10px;
+    padding: 10px;
+    font-family: var(--ema-font);
+    font-size: 14px;
+    outline:none;
+  }
+  .ema-mailbtn{
+    width:100%;
+    margin-top: 8px;
+    background:#111827;
+    color:#fff;
+    border:none;
+    padding: 11px 12px;
+    border-radius: 10px;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .ema-tip{
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--ema-muted);
+  }
 
-    .actions{ display:flex; gap:8px; align-items:center; }
-    .iconbtn{
-      width:32px; height:32px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.25);
-      background: rgba(255,255,255,.12);
-      color:white;
-      cursor:pointer;
-      display:grid; place-items:center;
-      user-select:none;
-      transition: transform .12s ease, background .12s ease;
-    }
-    .iconbtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.18); }
-
-    .body{
-      padding:14px;
-      background: linear-gradient(180deg, #ffffff, #ffffff 62%, #f8fafc);
-    }
-
-    /* CHAT */
-    .chat{
-      height: 320px;
-      overflow:auto;
-      padding: 10px;
-      background: #f8fafc;
-      border:1px solid var(--line);
-      border-radius: 16px;
-    }
-    .msg{ display:flex; margin:8px 0; }
-    .msg.user{ justify-content:flex-end; }
-
-    .bubble{
-      max-width: 86%;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border:1px solid var(--line);
-      background:white;
-      color: var(--text);
-      box-shadow: 0 8px 18px rgba(2,6,23,.05);
-      font-size: 13.5px;
-      line-height: 1.35;
-      white-space: pre-line;
-    }
-    .msg.bot .bubble{ border-left: 4px solid var(--brand); }
-    .msg.user .bubble{
-      background: linear-gradient(135deg, #dbeafe, #eef2ff);
-      border-left: 4px solid #60a5fa;
-    }
-
-    .composer{
-      display:flex;
-      gap:10px;
-      margin-top:10px;
-      align-items:center;
-    }
-    input[type="text"]{
-      flex:1;
-      border:1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-      font-size: 14px;
-      outline:none;
-      background:white;
-      min-width:0;
-    }
-    input[type="text"]:focus{
-      border-color:#93c5fd;
-      box-shadow:0 0 0 4px rgba(147,197,253,.25);
-    }
-    .sendBtn{
-      border:none;
-      border-radius:14px;
-      padding:12px 14px;
-      cursor:pointer;
-      font-weight:900;
-      color:white;
-      background: linear-gradient(135deg, var(--brand), var(--brand2));
-      box-shadow: 0 10px 22px rgba(2,6,23,.14);
-      user-select:none;
-      min-width:92px;
-    }
-    .sendBtn:hover{ filter: brightness(1.02); transform: translateY(-1px); }
-    .sendBtn:active{ transform: translateY(0px); }
-
-    /* FORM CORREO */
-    .card{
-      margin-top:12px;
-      border:1px solid var(--line);
-      background:white;
-      border-radius:16px;
-      padding:12px;
-    }
-    textarea{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      margin-top:8px;
-      font-size:14px;
-      resize:vertical;
-      min-height:90px;
-      outline:none;
-      background:white;
-    }
-    textarea:focus{
-      border-color:#93c5fd;
-      box-shadow:0 0 0 4px rgba(147,197,253,.25);
-    }
-    .mailBtn{
-      margin-top:10px;
-      width:100%;
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:14px;
-      padding:10px 12px;
-      cursor:pointer;
-      font-weight:900;
-    }
-    .mailBtn:hover{ background:#f1f5f9; }
-
-    .note{
-      margin-top:8px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.35;
-    }
-  </style>
-</head>
-
-<body>
-
-  <!-- Botón flotante -->
-  <button class="fab" id="fab" aria-label="Abrir asistente">
-    <span class="logoWrap">
-      <img id="fabLogo" alt="Logo" />
-    </span>
-    <span class="txt">EmaBot</span>
-  </button>
-
-  <!-- Widget -->
-  <div class="widget" id="widget" role="application" aria-label="EmaBot Asistente Virtual">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo">
-          <img id="headerLogo" alt="Logo del colegio" />
-        </div>
-        <div class="title">
-          <b>EmaBot – Asistente Virtual</b>
-          <small><span class="dot" aria-hidden="true"></span><span id="schoolName">Colegio</span></small>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="iconbtn" id="minBtn" title="Minimizar" aria-label="Minimizar">—</button>
-        <button class="iconbtn" id="closeBtn" title="Cerrar" aria-label="Cerrar">✕</button>
-      </div>
-    </div>
-
-    <div class="body">
-      <div class="chat" id="chat" aria-live="polite"></div>
-
-      <!-- TODO digitado -->
-      <div class="composer">
-        <input id="input" type="text" placeholder="Escribe tu consulta…" autocomplete="off"/>
-        <button class="sendBtn" id="sendBtn">Enviar</button>
-      </div>
-
-      <!-- Formulario correo -->
-      <div class="card">
-        <b>✉️ Escribir por correo</b>
-        <textarea id="mailMsg" placeholder="Escribe tu mensaje…"></textarea>
-        <button class="mailBtn" id="mailBtn">Enviar correo</button>
-        <div class="note">
-          Si el asistente no puede resolver tu consulta, te enviará automáticamente a WhatsApp para atención directa.
-        </div>
-      </div>
-
-      <div class="note">🏫 Este asistente brinda información general y no reemplaza la atención directa del colegio.</div>
-    </div>
-  </div>
+  /* Mobile tweaks */
+  @media (max-width: 420px){
+    .ema-panel{ width: calc(100vw - 24px); right:12px; }
+    .ema-fab{ right:12px; bottom:12px; }
+    .ema-panel{ bottom:84px; }
+  }
+</style>
 
 <script>
+(function(){
+  // =======================
+  // CONFIGURACIÓN (EDITA AQUÍ)
+  // =======================
   const CONFIG = {
+    botName: "EmaBot",
     schoolName: "Colegio Integral Emanuel",
+    // Pega aquí la URL del logo (sube tu logo a Wix y copia el enlace)
+    logoUrl: "",
 
-    // ✅ LOGO: pega aquí la URL del logo (ej: https://tusitio.com/logo.png)
-    // Si lo subes junto al HTML en el mismo hosting, puedes usar: "logo.png"
-    logoUrl: "PEGA_AQUI_URL_DEL_LOGO",
+    // WhatsApp (pon el número con código país, sin + ni espacios)
+    // Ejemplo Nicaragua: 505XXXXXXXX
+    whatsappNumber: "505XXXXXXXX",
 
-    // ✅ Google Maps link
-    mapLink: "PEGA_AQUI_TU_MAPLINK",
+    // Correo institucional
+    emailTo: "colegio@tudominio.com",
 
-    // ✅ WhatsApp / contacto
-    whatsapp: "50558057682",
-    phone: "58057682",
-
-    // ✅ correo del colegio
-    email: "colegio@ejemplo.com",
-
-    officeHours: "Lunes a Viernes | 7:00 a.m. – 3:00 p.m."
+    // Datos del colegio (los que ya me diste)
+    direccion: "De Maxipalí, 25 varas al norte, Matagalpa.",
+    mensualidad: "La mensualidad es de 1,450 córdobas.",
+    horario: "Nuestro horario es de 7:30 a.m. a 5:00 p.m.",
+    matricula: "Para matrícula, por favor indique: nombre del estudiante, grado al que aplica, y un número de contacto. Si desea, puedo redirigirle a WhatsApp.",
+    contacto: "Puede contactarnos por WhatsApp o escribirnos por correo desde este asistente.",
   };
 
-  const fab = document.getElementById("fab");
-  const widget = document.getElementById("widget");
-  const chat = document.getElementById("chat");
-  const input = document.getElementById("input");
+  // =======================
+  // HTML UI
+  // =======================
+  const root = document.getElementById("emaBotRoot");
+  root.innerHTML = `
+    <button class="ema-fab" id="emaFab" aria-label="Abrir chat">
+      <span class="ema-fab-badge"></span>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H8l-4 3v-3H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 4h12v2H6V8zm0 4h9v2H6v-2z"></path>
+      </svg>
+    </button>
 
-  // Logos + nombre
-  document.getElementById("schoolName").textContent = CONFIG.schoolName;
+    <div class="ema-panel" id="emaPanel" role="dialog" aria-label="Chat EmaBot">
+      <div class="ema-header">
+        <div class="ema-brand">
+          <div class="ema-logo" id="emaLogo">
+            ${CONFIG.logoUrl ? `<img src="${CONFIG.logoUrl}" alt="Logo">` : `
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="white" aria-hidden="true">
+                <path d="M12 2l9 4.5v11L12 22l-9-4.5v-11L12 2zm0 2.2L5 7.1v8.8l7 3.5 7-3.5V7.1l-7-2.9z"/>
+              </svg>
+            `}
+          </div>
+          <div class="ema-title">
+            <strong>${CONFIG.botName} – Asistente Virtual</strong>
+            <span><span class="ema-dot"></span>${CONFIG.schoolName}</span>
+          </div>
+        </div>
 
-  const fabLogo = document.getElementById("fabLogo");
-  const headerLogo = document.getElementById("headerLogo");
+        <div class="ema-actions">
+          <button class="ema-iconbtn" id="emaSpeakerBtn" title="Activar/Desactivar voz" aria-label="Voz">
+            <svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89 1 5 3.77 5 6.71s-2.11 5.71-5 6.71v2.06c4.01-1.06 7-4.7 7-8.77s-2.99-7.71-7-8.77z"/></svg>
+          </button>
 
-  // Si no se configura el logo, usamos un emoji para evitar imagen rota
-  function setLogo(){
-    if(!CONFIG.logoUrl || CONFIG.logoUrl.includes("PEGA_AQUI")){
-      // fallback: ocultar <img> y mostrar emoji
-      fabLogo.style.display = "none";
-      headerLogo.style.display = "none";
+          <button class="ema-iconbtn" id="emaMinBtn" title="Minimizar" aria-label="Minimizar">
+            <svg viewBox="0 0 24 24"><path d="M6 19h12v2H6z"/></svg>
+          </button>
 
-      // ponemos emoji en su contenedor
-      fab.querySelector(".logoWrap").textContent = "🏫";
-      document.querySelector(".logo").textContent = "🏫";
-      return;
-    }
-    fabLogo.src = CONFIG.logoUrl;
-    headerLogo.src = CONFIG.logoUrl;
-  }
-  setLogo();
+          <button class="ema-iconbtn" id="emaCloseBtn" title="Cerrar" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24"><path d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3z"/></svg>
+          </button>
+        </div>
+      </div>
 
-  function openWidget(){
-    widget.classList.add("open");
-    fab.style.display = "none";
-    greetOnce();
-    setTimeout(()=>input.focus(), 60);
-  }
-  function hideWidget(){
-    widget.classList.remove("open");
-    fab.style.display = "flex";
-  }
+      <div class="ema-body">
+        <div class="ema-messages" id="emaMessages"></div>
 
-  fab.addEventListener("click", openWidget);
-  document.getElementById("closeBtn").addEventListener("click", hideWidget);
-  document.getElementById("minBtn").addEventListener("click", hideWidget);
+        <div class="ema-footer">
+          <div class="ema-inputrow">
+            <input class="ema-input" id="emaInput" placeholder="Escriba su consulta..." autocomplete="off"/>
+            <button class="ema-send" id="emaSend">Enviar</button>
+          </div>
 
-  function addMsg(text, who="bot"){
-    const row = document.createElement("div");
-    row.className = "msg " + who;
+          <div class="ema-smallrow">
+            <button class="ema-softbtn" id="emaMicBtn" title="Hablar">
+              🎤 Hablar
+            </button>
+            <button class="ema-softbtn" id="emaMailToggle" title="Escribir por correo">
+              ✉️ Escribir por correo
+            </button>
+          </div>
 
-    const safe = String(text).replace(/</g,"&lt;").replace(/>/g,"&gt;");
+          <div class="ema-mailbox" id="emaMailbox">
+            <h4>✉️ Escribir por correo</h4>
+            <textarea class="ema-textarea" id="emaMailText" placeholder="Escriba su mensaje..."></textarea>
+            <button class="ema-mailbtn" id="emaMailSend">Enviar correo</button>
+            <div class="ema-tip">Tip: Si prefiere, también puede escribir “enviar whatsapp” y le remito de inmediato.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // =======================
+  // HELPERS (voz + UI)
+  // =======================
+  const $ = (id) => document.getElementById(id);
+
+  const panel = $("emaPanel");
+  const fab = $("emaFab");
+  const messagesEl = $("emaMessages");
+  const inputEl = $("emaInput");
+
+  let voiceEnabled = true;
+  let recognizing = false;
+
+  function addMessage(text, who="bot"){
+    const wrap = document.createElement("div");
+    wrap.className = "ema-msg " + (who === "user" ? "user" : "bot");
     const bubble = document.createElement("div");
-    bubble.className = "bubble";
-    bubble.innerHTML = safe.replace(/\n/g,"<br/>");
-
-    row.appendChild(bubble);
-    chat.appendChild(row);
-    chat.scrollTop = chat.scrollHeight;
+    bubble.className = "ema-bubble";
+    bubble.innerHTML = text;
+    wrap.appendChild(bubble);
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  let greeted = false;
-  function greetOnce(){
-    if(greeted) return;
-    greeted = true;
-    addMsg(
-`👋 ¡Bienvenido(a)! Soy EmaBot.
-Puedes escribir tu consulta (m matrícula, horarios, ubicación, contacto, costos, requisitos, etc.).
-Si no encuentro una respuesta segura, te enviaré a WhatsApp ✅`
-    );
+  function addQuickChips(chips){
+    const container = document.createElement("div");
+    container.className = "ema-quick";
+    chips.forEach(label=>{
+      const chip = document.createElement("div");
+      chip.className = "ema-chip";
+      chip.textContent = label;
+      chip.addEventListener("click", ()=>{
+        sendUserText(label);
+      });
+      container.appendChild(chip);
+    });
+    messagesEl.appendChild(container);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  function openWhatsApp(prefill){
-    const url = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(prefill || "")}`;
+  function speak(text){
+    try{
+      if(!voiceEnabled) return;
+      if(!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      // “tipo Alexa”: voz clara y natural
+      u.lang = "es-ES";
+      u.rate = 0.95;
+      u.pitch = 1.02;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
+  function normalize(t){
+    return (t || "")
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"") // quita tildes
+      .trim();
+  }
+
+  function openWhatsApp(prefilled="Hola, deseo información del Colegio Integral Emanuel."){
+    const num = CONFIG.whatsappNumber.replace(/\D/g,"");
+    const url = `https://wa.me/${num}?text=${encodeURIComponent(prefilled)}`;
+    // IMPORTANTE: abrir en respuesta a interacción del usuario ayuda a que no lo bloquee el navegador
     window.open(url, "_blank");
   }
 
-  function escalateUnknown(userText){
-    addMsg("🧑‍💼 No encontré una respuesta segura. Te redirijo a WhatsApp para atención directa ✅");
-    const prefill = `Hola, necesito información del ${CONFIG.schoolName}.\nMi consulta fue: "${userText || "—"}"`;
-    openWhatsApp(prefill);
+  function mailtoSend(body){
+    const subject = `Consulta desde ${CONFIG.schoolName}`;
+    const url = `mailto:${encodeURIComponent(CONFIG.emailTo)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = url;
   }
 
-  // Respuestas básicas por intención (solo por texto digitado)
-  function detectIntent(t){
-    const s = (t||"").toLowerCase();
-
-    if(s.includes("matri") || s.includes("inscrip") || s.includes("requis") || s.includes("cupo") || s.includes("pago") || s.includes("arancel") || s.includes("costo"))
-      return "matricula";
-
-    if(s.includes("hora") || s.includes("turno") || s.includes("atenc") || s.includes("entrada") || s.includes("salida"))
-      return "horarios";
-
-    if(s.includes("ubic") || s.includes("direc") || s.includes("map") || s.includes("como llegar") || s.includes("donde queda"))
-      return "ubicacion";
-
-    if(s.includes("contact") || s.includes("telefono") || s.includes("teléfono") || s.includes("whats") || s.includes("correo") || s.includes("email"))
-      return "contacto";
-
-    return "desconocido";
+  // =======================
+  // "INTENCIONES" (NLP simple)
+  // =======================
+  function matchAny(text, arr){
+    return arr.some(k => text.includes(k));
   }
 
-  function respond(text){
-    const intent = detectIntent(text);
+  function botReply(userRaw){
+    const t = normalize(userRaw);
 
-    if(intent === "matricula"){
-      addMsg(
-`📝 Matrícula
-Indícame el nivel (Preescolar / Primaria / Secundaria) y te guío.
-
-En general se solicita:
-• Documentos del estudiante (partida/constancia según aplique)
-• Documentos del tutor
-• Récord de notas (si viene de otro centro)
-Si tu caso es específico, puedo enviarte a WhatsApp para atención directa.`
-      );
+    // comandos directos
+    if (matchAny(t, ["enviar whatsapp","whatsapp","wasap","wasa","wsp","wa.me"])) {
+      const msg = "Con gusto. Le estoy redirigiendo a WhatsApp para atención directa.";
+      addMessage(msg, "bot");
+      speak(msg);
+      openWhatsApp("Hola, deseo información del Colegio Integral Emanuel.");
       return;
     }
 
-    if(intent === "horarios"){
-      addMsg(`⏰ Horarios\nHorario de atención: ${CONFIG.officeHours}\nSi necesitas horarios de clases por nivel, indícame el nivel.`);
+    // saludo
+    if (matchAny(t, ["hola","buenas","buenos dias","buenas tardes","buenas noches","saludos"])) {
+      const msg = `Estimado(a) visitante, reciba un cordial saludo. Soy ${CONFIG.botName}, asistente virtual del ${CONFIG.schoolName}. ¿En qué puedo ayudarle hoy?`;
+      addMessage(msg, "bot");
+      speak(msg);
+      addQuickChips(["Dirección", "Mensualidad", "Horario", "Matrícula", "Contacto"]);
       return;
     }
 
-    if(intent === "ubicacion"){
-      if(!CONFIG.mapLink || CONFIG.mapLink.includes("PEGA_AQUI")){
-        return escalateUnknown("Ubicación (falta configurar Google Maps).");
+    // dirección
+    if (matchAny(t, ["direccion","ubicacion","donde queda","donde estan","como llego","llegar","mapa"])) {
+      const msg = `Con gusto. <b>Dirección:</b> ${CONFIG.direccion}`;
+      addMessage(msg, "bot");
+      speak(`Con gusto. Dirección: ${CONFIG.direccion}`);
+      return;
+    }
+
+    // mensualidad / costos
+    if (matchAny(t, ["mensualidad","cuanto cuesta","precio","pago","cuota","costo","arancel"])) {
+      const msg = `Con gusto. <b>Mensualidad:</b> ${CONFIG.mensualidad}`;
+      addMessage(msg, "bot");
+      speak(`Con gusto. ${CONFIG.mensualidad}`);
+      return;
+    }
+
+    // horario
+    if (matchAny(t, ["horario","hora","a que hora","entrada","salida","jornada"])) {
+      const msg = `Con gusto. <b>Horario:</b> ${CONFIG.horario}`;
+      addMessage(msg, "bot");
+      speak(`Con gusto. ${CONFIG.horario}`);
+      return;
+    }
+
+    // matrícula
+    if (matchAny(t, ["matricula","matricular","inscripcion","inscribir","requisitos","documentos","cupos"])) {
+      const msg = `Con gusto. <b>Matrícula:</b> ${CONFIG.matricula}<br><br>Si prefiere atención directa, escriba <b>“enviar whatsapp”</b>.`;
+      addMessage(msg, "bot");
+      speak("Con gusto. Para matrícula, por favor indique nombre del estudiante, grado al que aplica y un número de contacto. Si desea, puedo redirigirle a WhatsApp.");
+      return;
+    }
+
+    // contacto
+    if (matchAny(t, ["contacto","telefono","numero","correo","email","secretaria","atencion"])) {
+      const msg = `Con gusto. <b>Contacto:</b> ${CONFIG.contacto}<br><br>
+        <div class="ema-quick">
+          <div class="ema-chip" id="emaChipWA">📱 Enviar WhatsApp</div>
+          <div class="ema-chip" id="emaChipMail">✉️ Escribir por correo</div>
+        </div>`;
+      addMessage(msg, "bot");
+      speak("Con gusto. Puede contactarnos por WhatsApp o escribirnos por correo desde este asistente.");
+
+      // activar chips
+      setTimeout(()=>{
+        const wa = document.getElementById("emaChipWA");
+        const ml = document.getElementById("emaChipMail");
+        if(wa) wa.onclick = () => openWhatsApp("Hola, deseo información del Colegio Integral Emanuel.");
+        if(ml) ml.onclick = () => $("emaMailbox").style.display = "block";
+      }, 50);
+      return;
+    }
+
+    // fallback -> remitir WhatsApp
+    const msg = `Gracias por su consulta. En este momento no tengo esa información con certeza.<br>
+      Para atención directa, le remito a WhatsApp.<br><br>
+      <div class="ema-quick">
+        <div class="ema-chip" id="emaChipWAFallback">📱 Abrir WhatsApp</div>
+      </div>`;
+    addMessage(msg, "bot");
+    speak("Gracias por su consulta. En este momento no tengo esa información con certeza. Le remito a WhatsApp para atención directa.");
+
+    // abrir WA (en interacción del usuario se puede abrir; aquí igual fue producto de 'Enviar', suele permitir)
+    setTimeout(()=>{
+      const wa = document.getElementById("emaChipWAFallback");
+      if(wa) wa.onclick = () => openWhatsApp(`Hola, tengo una consulta: "${userRaw}"`);
+    }, 50);
+
+    // Intento de apertura automática (si el navegador lo bloquea, el botón queda)
+    try{ openWhatsApp(`Hola, tengo una consulta: "${userRaw}"`); }catch(e){}
+  }
+
+  // =======================
+  // ENVIAR MENSAJE
+  // =======================
+  function sendUserText(text){
+    const clean = (text || "").trim();
+    if(!clean) return;
+    addMessage(clean, "user");
+    inputEl.value = "";
+
+    // respuesta bot (pequeña pausa para sensación "humana")
+    setTimeout(()=> botReply(clean), 250);
+  }
+
+  $("emaSend").addEventListener("click", ()=> sendUserText(inputEl.value));
+  inputEl.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter") sendUserText(inputEl.value);
+  });
+
+  // =======================
+  // MICRÓFONO (SpeechRecognition)
+  // =======================
+  function startListening(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){
+      const msg = "Su navegador no admite micrófono aquí. Por favor use Google Chrome en computadora o Android.";
+      addMessage(msg, "bot");
+      speak(msg);
+      return;
+    }
+    if(recognizing) return;
+
+    const rec = new SR();
+    rec.lang = "es-ES";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    recognizing = true;
+
+    const msg = "Le escucho. Puede hablar ahora.";
+    addMessage(msg, "bot");
+    speak(msg);
+
+    rec.onresult = (ev)=>{
+      const said = ev.results[0][0].transcript || "";
+      sendUserText(said);
+    };
+    rec.onerror = ()=>{
+      recognizing = false;
+      addMessage("No logré escuchar con claridad. Intente nuevamente, por favor.", "bot");
+      speak("No logré escuchar con claridad. Intente nuevamente, por favor.");
+    };
+    rec.onend = ()=>{ recognizing = false; };
+    rec.start();
+  }
+
+  $("emaMicBtn").addEventListener("click", startListening);
+
+  // =======================
+  // CORREO
+  // =======================
+  $("emaMailToggle").addEventListener("click", ()=>{
+    const box = $("emaMailbox");
+    box.style.display = (box.style.display === "block") ? "none" : "block";
+  });
+
+  $("emaMailSend").addEventListener("click", ()=>{
+    const body = $("emaMailText").value.trim();
+    if(!body){
+      addMessage("Por favor escriba su mensaje para enviarlo por correo.", "bot");
+      speak("Por favor escriba su mensaje para enviarlo por correo.");
+      return;
+    }
+    addMessage("Perfecto. Abriré su correo para enviar el mensaje.", "bot");
+    speak("Perfecto. Abriré su correo para enviar el mensaje.");
+    mailtoSend(body);
+  });
+
+  // =======================
+  // ABRIR / CERRAR / MINIMIZAR
+  // =======================
+  function openPanel(){
+    panel.style.display = "block";
+    setTimeout(()=> inputEl.focus(), 200);
+  }
+  function closePanel(){
+    panel.style.display = "none";
+  }
+
+  fab.addEventListener("click", ()=>{
+    if(panel.style.display === "block") closePanel();
+    else{
+      openPanel();
+      // saludo inicial con voz (una sola vez por sesión de página)
+      if(!sessionStorage.getItem("ema_greeted")){
+        sessionStorage.setItem("ema_greeted","1");
+        const greet = `Estimado(a) visitante, reciba un cordial saludo. Soy ${CONFIG.botName}, asistente virtual del ${CONFIG.schoolName}. ¿En qué puedo ayudarle hoy?`;
+        addMessage(greet, "bot");
+        speak(greet);
+        addQuickChips(["Dirección", "Mensualidad", "Horario", "Matrícula", "Contacto"]);
       }
-      addMsg(`📍 Ubicación (Google Maps)\n${CONFIG.mapLink}\n¿Deseas que te indique cómo llegar desde tu zona?`);
-      return;
     }
-
-    if(intent === "contacto"){
-      addMsg(
-`📞 Contacto
-Tel: ${CONFIG.phone}
-WhatsApp: https://wa.me/${CONFIG.whatsapp}
-Correo: ${CONFIG.email}`
-      );
-      return;
-    }
-
-    // ✅ Si no sabe → WhatsApp automático
-    return escalateUnknown(text);
-  }
-
-  document.getElementById("sendBtn").addEventListener("click", () => {
-    const t = input.value.trim();
-    if(!t) return;
-    addMsg(t, "user");
-    input.value = "";
-    respond(t);
   });
 
-  input.addEventListener("keydown", (e) => {
-    if(e.key === "Enter") document.getElementById("sendBtn").click();
+  $("emaCloseBtn").addEventListener("click", closePanel);
+  $("emaMinBtn").addEventListener("click", closePanel);
+
+  // Toggle voz
+  $("emaSpeakerBtn").addEventListener("click", ()=>{
+    voiceEnabled = !voiceEnabled;
+    const msg = voiceEnabled ? "Voz activada." : "Voz desactivada.";
+    addMessage(msg, "bot");
+    speak(msg);
   });
 
-  // Form correo
-  document.getElementById("mailBtn").addEventListener("click", () => {
-    const msg = document.getElementById("mailMsg").value.trim();
-    const subject = `Consulta – ${CONFIG.schoolName}`;
-    const body = msg || "Escriba aquí su consulta…";
-    window.location.href =
-      `mailto:${encodeURIComponent(CONFIG.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    addMsg("✉️ Listo. Se abrirá tu correo para enviar el mensaje.");
-  });
+  // =======================
+  // OPCIONAL: auto-abrir el asistente al entrar (si quieres)
+  // Descomenta para que se despliegue solo.
+  // =======================
+  // window.addEventListener("load", ()=>{
+  //   openPanel();
+  //   if(!sessionStorage.getItem("ema_greeted")){
+  //     sessionStorage.setItem("ema_greeted","1");
+  //     const greet = `Estimado(a) visitante, reciba un cordial saludo. Soy ${CONFIG.botName}, asistente virtual del ${CONFIG.schoolName}. ¿En qué puedo ayudarle hoy?`;
+  //     addMessage(greet, "bot");
+  //     speak(greet);
+  //     addQuickChips(["Dirección", "Mensualidad", "Horario", "Matrícula", "Contacto"]);
+  //   }
+  // });
 
-  // Inicia oculto siempre (solo botón flotante)
+})();
 </script>
-
-</body>
-</html>
