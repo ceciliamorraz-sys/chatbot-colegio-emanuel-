@@ -13,25 +13,24 @@
       --text:#0f172a;
       --muted:#64748b;
       --line:#e2e8f0;
-      --soft:#f1f5f9;
       --ok:#22c55e;
       --shadow:0 14px 38px rgba(2,6,23,.28);
       --radius:18px;
     }
     *{ box-sizing:border-box; }
 
-    /* ✅ CLAVE para Google Sites: fondo transparente + sin “bloque” */
+    /* ✅ Google Sites iframe: transparente + sin bloque oscuro */
     html, body{
       margin:0;
       padding:0;
       background: transparent !important;
       height:100%;
-      overflow:hidden; /* evita scroll y “cuadro grande” */
+      overflow:hidden;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
     }
 
     /* =========================
-       BOTÓN FLOTANTE (VISIBLE)
+       BOTÓN FLOTANTE (OCULTO HASTA USAR)
        ========================= */
     .fab{
       position:fixed;
@@ -56,13 +55,20 @@
     .fab:hover{ transform: translateY(-1px); filter: brightness(1.02); }
     .fab:active{ transform: translateY(0px); }
 
-    .fab .ico{
+    .fab .logoWrap{
       width:34px; height:34px;
       border-radius:14px;
       background: rgba(255,255,255,.14);
       border:1px solid rgba(255,255,255,.25);
       display:grid; place-items:center;
+      overflow:hidden;
       flex:0 0 auto;
+    }
+    .fab img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
     .fab .txt{
       white-space:nowrap;
@@ -71,14 +77,14 @@
       font-weight:900;
     }
 
-    /* En iframes estrechos: solo ícono para que NO se recorte */
+    /* En iframes estrechos: solo icono/logo */
     @media (max-width: 420px){
       .fab .txt{ display:none; }
       .fab{ padding:12px; }
     }
 
     /* =========================
-       WIDGET (OCULTO POR DEFECTO)
+       WIDGET
        ========================= */
     .widget{
       position:fixed;
@@ -111,20 +117,31 @@
       justify-content:space-between;
       gap:10px;
     }
+
     .brand{
       display:flex;
       align-items:center;
       gap:10px;
       min-width:0;
     }
-    .avatar{
-      width:36px; height:36px;
+
+    .logo{
+      width:38px; height:38px;
       border-radius:14px;
       background: rgba(255,255,255,.18);
       border:1px solid rgba(255,255,255,.25);
-      display:grid; place-items:center;
+      overflow:hidden;
       flex:0 0 auto;
+      display:grid;
+      place-items:center;
     }
+    .logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
     .title{
       min-width:0;
       line-height:1.05;
@@ -162,50 +179,9 @@
       background: linear-gradient(180deg, #ffffff, #ffffff 62%, #f8fafc);
     }
 
-    .banner{
-      border:1px solid rgba(226,232,240,.95);
-      background: linear-gradient(135deg, rgba(30,78,216,.10), rgba(14,165,233,.10));
-      border-radius: 16px;
-      padding:12px;
-      margin-bottom:12px;
-    }
-    .banner b{ color:var(--text); }
-    .banner .sub{
-      color:var(--muted);
-      font-size:12.5px;
-      margin-top:4px;
-      line-height:1.35;
-    }
-    .ctaRow{
-      display:flex;
-      gap:10px;
-      margin-top:10px;
-      flex-wrap:wrap;
-    }
-    .pill{
-      border:1px solid var(--line);
-      background:white;
-      border-radius:999px;
-      padding:8px 10px;
-      font-weight:900;
-      font-size:12.5px;
-      cursor:pointer;
-      user-select:none;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
-    }
-    .pill:hover{ transform: translateY(-1px); background:#f1f5f9; border-color:#cbd5e1; }
-    .pill.primary{
-      background: linear-gradient(135deg, var(--brand), var(--brand2));
-      color:white;
-      border-color: transparent;
-    }
-
     /* CHAT */
     .chat{
-      height: 280px;
+      height: 320px;
       overflow:auto;
       padding: 10px;
       background: #f8fafc;
@@ -214,6 +190,7 @@
     }
     .msg{ display:flex; margin:8px 0; }
     .msg.user{ justify-content:flex-end; }
+
     .bubble{
       max-width: 86%;
       padding: 10px 12px;
@@ -230,31 +207,6 @@
     .msg.user .bubble{
       background: linear-gradient(135deg, #dbeafe, #eef2ff);
       border-left: 4px solid #60a5fa;
-    }
-
-    .row{ display:flex; gap:10px; margin-top:10px; }
-    .btn{
-      flex:1;
-      border:1px solid var(--line);
-      background: white;
-      border-radius: 14px;
-      padding: 10px 12px;
-      cursor:pointer;
-      font-weight:900;
-      user-select:none;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
-      min-height:44px;
-    }
-    .btn:hover{ transform: translateY(-1px); background:#f1f5f9; border-color:#cbd5e1; }
-    .btn.primary{
-      background: linear-gradient(135deg, var(--brand), var(--brand2));
-      color:white;
-      border-color: transparent;
-    }
-    .btn.danger{
-      background: linear-gradient(135deg, #ef4444, #f97316);
-      color:white;
-      border-color: transparent;
     }
 
     .composer{
@@ -277,7 +229,22 @@
       border-color:#93c5fd;
       box-shadow:0 0 0 4px rgba(147,197,253,.25);
     }
+    .sendBtn{
+      border:none;
+      border-radius:14px;
+      padding:12px 14px;
+      cursor:pointer;
+      font-weight:900;
+      color:white;
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      box-shadow: 0 10px 22px rgba(2,6,23,.14);
+      user-select:none;
+      min-width:92px;
+    }
+    .sendBtn:hover{ filter: brightness(1.02); transform: translateY(-1px); }
+    .sendBtn:active{ transform: translateY(0px); }
 
+    /* FORM CORREO */
     .card{
       margin-top:12px;
       border:1px solid var(--line);
@@ -301,6 +268,18 @@
       border-color:#93c5fd;
       box-shadow:0 0 0 4px rgba(147,197,253,.25);
     }
+    .mailBtn{
+      margin-top:10px;
+      width:100%;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:10px 12px;
+      cursor:pointer;
+      font-weight:900;
+    }
+    .mailBtn:hover{ background:#f1f5f9; }
+
     .note{
       margin-top:8px;
       color:var(--muted);
@@ -312,21 +291,27 @@
 
 <body>
 
-  <!-- ✅ Oculto hasta que lo requieran: solo el botón -->
+  <!-- Botón flotante -->
   <button class="fab" id="fab" aria-label="Abrir asistente">
-    <span class="ico">🤖</span>
+    <span class="logoWrap">
+      <img id="fabLogo" alt="Logo" />
+    </span>
     <span class="txt">EmaBot</span>
   </button>
 
+  <!-- Widget -->
   <div class="widget" id="widget" role="application" aria-label="EmaBot Asistente Virtual">
     <div class="topbar">
       <div class="brand">
-        <div class="avatar" aria-hidden="true">🤖</div>
+        <div class="logo">
+          <img id="headerLogo" alt="Logo del colegio" />
+        </div>
         <div class="title">
           <b>EmaBot – Asistente Virtual</b>
-          <small><span class="dot" aria-hidden="true"></span><span id="schoolName">Colegio Integral Emanuel</span></small>
+          <small><span class="dot" aria-hidden="true"></span><span id="schoolName">Colegio</span></small>
         </div>
       </div>
+
       <div class="actions">
         <button class="iconbtn" id="minBtn" title="Minimizar" aria-label="Minimizar">—</button>
         <button class="iconbtn" id="closeBtn" title="Cerrar" aria-label="Cerrar">✕</button>
@@ -334,44 +319,21 @@
     </div>
 
     <div class="body">
-      <div class="banner">
-        <b>✨ Información del colegio en segundos</b>
-        <div class="sub">
-          Escribe tu consulta o usa los botones. Si no encuentro una respuesta segura, te envío directo a WhatsApp ✅
-        </div>
-        <div class="ctaRow">
-          <div class="pill primary" id="ctaEnroll">📝 Matrícula</div>
-          <div class="pill" id="ctaMaps">📍 Google Maps</div>
-          <div class="pill" id="ctaWa">💬 WhatsApp</div>
-        </div>
-      </div>
-
       <div class="chat" id="chat" aria-live="polite"></div>
 
-      <div class="row">
-        <button class="btn" data-action="matricula">📝 Matrícula</button>
-        <button class="btn" data-action="horarios">⏰ Horarios</button>
-      </div>
-      <div class="row">
-        <button class="btn" data-action="ubicacion">📍 Ubicación</button>
-        <button class="btn" data-action="contacto">📞 Contacto</button>
-      </div>
-      <div class="row">
-        <button class="btn danger" data-action="whatsapp">💬 WhatsApp</button>
-      </div>
-
+      <!-- TODO digitado -->
       <div class="composer">
         <input id="input" type="text" placeholder="Escribe tu consulta…" autocomplete="off"/>
-        <button class="btn primary" id="sendBtn">Enviar</button>
+        <button class="sendBtn" id="sendBtn">Enviar</button>
       </div>
 
-      <!-- Formulario de correo -->
+      <!-- Formulario correo -->
       <div class="card">
         <b>✉️ Escribir por correo</b>
         <textarea id="mailMsg" placeholder="Escribe tu mensaje…"></textarea>
-        <button class="btn" id="mailBtn">Enviar correo</button>
+        <button class="mailBtn" id="mailBtn">Enviar correo</button>
         <div class="note">
-          Esto abre tu app de correo (Gmail/Outlook). Para respuesta inmediata, usa WhatsApp.
+          Si el asistente no puede resolver tu consulta, te enviará automáticamente a WhatsApp para atención directa.
         </div>
       </div>
 
@@ -382,13 +344,22 @@
 <script>
   const CONFIG = {
     schoolName: "Colegio Integral Emanuel",
-    // ✅ pega aquí tu enlace real
+
+    // ✅ LOGO: pega aquí la URL del logo (ej: https://tusitio.com/logo.png)
+    // Si lo subes junto al HTML en el mismo hosting, puedes usar: "logo.png"
+    logoUrl: "PEGA_AQUI_URL_DEL_LOGO",
+
+    // ✅ Google Maps link
     mapLink: "PEGA_AQUI_TU_MAPLINK",
-    // ✅ WhatsApp recomendado con código país (Nicaragua 505)
+
+    // ✅ WhatsApp / contacto
     whatsapp: "50558057682",
     phone: "58057682",
-    // ✅ correo real del colegio
-    email: "colegio@ejemplo.com"
+
+    // ✅ correo del colegio
+    email: "colegio@ejemplo.com",
+
+    officeHours: "Lunes a Viernes | 7:00 a.m. – 3:00 p.m."
   };
 
   const fab = document.getElementById("fab");
@@ -396,7 +367,28 @@
   const chat = document.getElementById("chat");
   const input = document.getElementById("input");
 
+  // Logos + nombre
   document.getElementById("schoolName").textContent = CONFIG.schoolName;
+
+  const fabLogo = document.getElementById("fabLogo");
+  const headerLogo = document.getElementById("headerLogo");
+
+  // Si no se configura el logo, usamos un emoji para evitar imagen rota
+  function setLogo(){
+    if(!CONFIG.logoUrl || CONFIG.logoUrl.includes("PEGA_AQUI")){
+      // fallback: ocultar <img> y mostrar emoji
+      fabLogo.style.display = "none";
+      headerLogo.style.display = "none";
+
+      // ponemos emoji en su contenedor
+      fab.querySelector(".logoWrap").textContent = "🏫";
+      document.querySelector(".logo").textContent = "🏫";
+      return;
+    }
+    fabLogo.src = CONFIG.logoUrl;
+    headerLogo.src = CONFIG.logoUrl;
+  }
+  setLogo();
 
   function openWidget(){
     widget.classList.add("open");
@@ -417,9 +409,7 @@
     const row = document.createElement("div");
     row.className = "msg " + who;
 
-    // escape básico
     const safe = String(text).replace(/</g,"&lt;").replace(/>/g,"&gt;");
-
     const bubble = document.createElement("div");
     bubble.className = "bubble";
     bubble.innerHTML = safe.replace(/\n/g,"<br/>");
@@ -433,7 +423,11 @@
   function greetOnce(){
     if(greeted) return;
     greeted = true;
-    addMsg("👋 ¡Bienvenido(a)! Soy EmaBot.\nPuedo brindarte información general del colegio.\nSi no encuentro una respuesta segura, te envío a WhatsApp ✅");
+    addMsg(
+`👋 ¡Bienvenido(a)! Soy EmaBot.
+Puedes escribir tu consulta (m matrícula, horarios, ubicación, contacto, costos, requisitos, etc.).
+Si no encuentro una respuesta segura, te enviaré a WhatsApp ✅`
+    );
   }
 
   function openWhatsApp(prefill){
@@ -447,37 +441,67 @@
     openWhatsApp(prefill);
   }
 
-  function respond(text){
-    const t = (text || "").toLowerCase();
+  // Respuestas básicas por intención (solo por texto digitado)
+  function detectIntent(t){
+    const s = (t||"").toLowerCase();
 
-    // Acciones rápidas
-    if(t === "matricula" || t.includes("matri")){
-      addMsg("📝 Matrícula: Indícame el nivel (Preescolar, Primaria o Secundaria) y te guío con requisitos y pasos.");
+    if(s.includes("matri") || s.includes("inscrip") || s.includes("requis") || s.includes("cupo") || s.includes("pago") || s.includes("arancel") || s.includes("costo"))
+      return "matricula";
+
+    if(s.includes("hora") || s.includes("turno") || s.includes("atenc") || s.includes("entrada") || s.includes("salida"))
+      return "horarios";
+
+    if(s.includes("ubic") || s.includes("direc") || s.includes("map") || s.includes("como llegar") || s.includes("donde queda"))
+      return "ubicacion";
+
+    if(s.includes("contact") || s.includes("telefono") || s.includes("teléfono") || s.includes("whats") || s.includes("correo") || s.includes("email"))
+      return "contacto";
+
+    return "desconocido";
+  }
+
+  function respond(text){
+    const intent = detectIntent(text);
+
+    if(intent === "matricula"){
+      addMsg(
+`📝 Matrícula
+Indícame el nivel (Preescolar / Primaria / Secundaria) y te guío.
+
+En general se solicita:
+• Documentos del estudiante (partida/constancia según aplique)
+• Documentos del tutor
+• Récord de notas (si viene de otro centro)
+Si tu caso es específico, puedo enviarte a WhatsApp para atención directa.`
+      );
       return;
     }
-    if(t === "horarios" || t.includes("hora")){
-      addMsg("⏰ Horario de atención: Lunes a Viernes 7:00 a.m. – 3:00 p.m.");
+
+    if(intent === "horarios"){
+      addMsg(`⏰ Horarios\nHorario de atención: ${CONFIG.officeHours}\nSi necesitas horarios de clases por nivel, indícame el nivel.`);
       return;
     }
-    if(t === "ubicacion" || t.includes("ubi") || t.includes("map")){
+
+    if(intent === "ubicacion"){
       if(!CONFIG.mapLink || CONFIG.mapLink.includes("PEGA_AQUI")){
-        escalateUnknown("Ubicación (falta configurar el enlace de Google Maps).");
-        return;
+        return escalateUnknown("Ubicación (falta configurar Google Maps).");
       }
-      addMsg(`📍 Google Maps:\n${CONFIG.mapLink}`);
+      addMsg(`📍 Ubicación (Google Maps)\n${CONFIG.mapLink}\n¿Deseas que te indique cómo llegar desde tu zona?`);
       return;
     }
-    if(t === "contacto" || t.includes("contac")){
-      addMsg(`📞 Contacto:\nTel: ${CONFIG.phone}\nWhatsApp: https://wa.me/${CONFIG.whatsapp}\nCorreo: ${CONFIG.email}`);
-      return;
-    }
-    if(t === "whatsapp" || t.includes("admin") || t.includes("secretaria") || t.includes("secretaría")){
-      openWhatsApp(`Hola, necesito información del ${CONFIG.schoolName}.`);
+
+    if(intent === "contacto"){
+      addMsg(
+`📞 Contacto
+Tel: ${CONFIG.phone}
+WhatsApp: https://wa.me/${CONFIG.whatsapp}
+Correo: ${CONFIG.email}`
+      );
       return;
     }
 
     // ✅ Si no sabe → WhatsApp automático
-    escalateUnknown(text);
+    return escalateUnknown(text);
   }
 
   document.getElementById("sendBtn").addEventListener("click", () => {
@@ -489,31 +513,20 @@
   });
 
   input.addEventListener("keydown", (e) => {
-    if(e.key === "Enter"){
-      document.getElementById("sendBtn").click();
-    }
+    if(e.key === "Enter") document.getElementById("sendBtn").click();
   });
-
-  document.querySelectorAll("[data-action]").forEach(btn=>{
-    btn.addEventListener("click", () => respond(btn.dataset.action));
-  });
-
-  // CTA
-  document.getElementById("ctaEnroll").addEventListener("click", () => respond("matricula"));
-  document.getElementById("ctaMaps").addEventListener("click", () => respond("ubicacion"));
-  document.getElementById("ctaWa").addEventListener("click", () => respond("whatsapp"));
 
   // Form correo
   document.getElementById("mailBtn").addEventListener("click", () => {
     const msg = document.getElementById("mailMsg").value.trim();
     const subject = `Consulta – ${CONFIG.schoolName}`;
     const body = msg || "Escriba aquí su consulta…";
-    window.location.href = `mailto:${encodeURIComponent(CONFIG.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href =
+      `mailto:${encodeURIComponent(CONFIG.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     addMsg("✉️ Listo. Se abrirá tu correo para enviar el mensaje.");
   });
 
-  // ✅ Inicia oculto SIEMPRE (solo botón)
-  // openWidget();  // (no lo usamos)
+  // Inicia oculto siempre (solo botón flotante)
 </script>
 
 </body>
